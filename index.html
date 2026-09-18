@@ -62,6 +62,14 @@
     background:var(--snow);color:var(--ink);border-radius:14px;padding:14px 16px;
     box-shadow:0 18px 40px rgba(20,16,44,.4);width:212px;pointer-events:auto}
   .volpop.on{display:block}
+  .volpop{width:236px}
+  .moodgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 4px}
+  .moodgrid button{font-family:var(--fd);font-weight:600;font-size:12px;
+    border:1.5px solid rgba(30,27,58,.16);background:transparent;color:var(--ink2);
+    border-radius:10px;padding:8px 6px;transition:all .2s}
+  .moodgrid button:hover{border-color:var(--ink2);color:var(--ink)}
+  .moodgrid button[aria-pressed="true"]{background:var(--ink);color:var(--snow);
+    border-color:var(--ink)}
   .volpop .vlab{font-family:var(--fd);font-weight:700;font-size:10.5px;letter-spacing:.18em;
     text-transform:uppercase;color:var(--ink3);margin:0 0 10px}
   .volpop input[type=range]{width:100%;accent-color:#FF8E7F;height:22px;margin:0 0 10px}
@@ -216,6 +224,11 @@
     text-transform:uppercase;color:var(--ink3)}
 
   /* floating 3d label */
+  #catsay{position:fixed;z-index:6;pointer-events:none;transform:translate(-50%,-100%);
+    font-family:var(--fd);font-weight:600;font-size:13px;color:var(--ink);
+    background:var(--snow);padding:7px 13px;border-radius:99px;white-space:nowrap;
+    box-shadow:0 8px 22px rgba(20,16,44,.35);opacity:0;transition:opacity .25s}
+  #catsay.on{opacity:1}
   #tag{position:fixed;z-index:4;pointer-events:none;transform:translate(-50%,-140%);
     font-family:var(--fd);font-weight:600;font-size:13px;color:var(--ink);
     background:var(--snow);padding:6px 13px;border-radius:99px;
@@ -395,9 +408,12 @@
     <button class="helpbtn" id="help" type="button" aria-label="How this works">?</button>
     <button class="snd" id="snd" type="button" aria-label="Sound settings">&#128266;</button>
     <div class="volpop" id="volpop">
-      <p class="vlab">Volume</p>
+      <p class="vlab">Mood</p>
+      <div class="moodgrid" id="moodgrid"></div>
+      <p class="vlab" style="margin-top:14px">Volume</p>
       <input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume">
       <button class="vmute" id="vmute" type="button">Mute</button>
+      <button class="vmute" id="vcats" type="button" style="margin-top:6px">Hide the cats</button>
     </div>
   </div>
 </div>
@@ -443,7 +459,7 @@
 
 <div class="panel hide" id="hud5">
   <p class="qprog">Your turn</p>
-  <p class="pintro">Four questions I do not get to answer. It saves as you type.</p>
+  <p class="pintro">Four questions I do not get to answer. It saves as you type, and sending it goes straight to him.</p>
   <label class="pf"><span>Where do we actually go first?</span>
     <input id="f1" type="text" placeholder="Spiti, obviously" maxlength="60"></label>
   <label class="pf"><span>Tofu&rsquo;s middle name</span>
@@ -462,6 +478,7 @@
 
 <nav class="nav" id="nav" aria-label="Scenes"></nav>
 <div id="tag" aria-hidden="true"></div>
+<div id="catsay" aria-hidden="true"></div>
 <div id="sndmsg" aria-live="polite"></div>
 
 <div id="intro">
@@ -590,8 +607,54 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       { bass:116.54, pad:[233.08,293.66,349.23,440.00],
         tune:[[0.4,880.00,.10],[2.5,698.46,.085],[4.7,587.33,.08]] }
     ];
-    var prog=DUSK;
-    var BAR=8.0;                       // one chord, and its phrase, every 8s
+
+    // Three more moods, all written here, nothing borrowed.
+    // DREAMY - D lydian, wide and floaty, long bars
+    var DREAMY=[
+      { bass:73.42,  pad:[146.83,185.00,220.00,329.63],
+        tune:[[0.8,440.00,.085],[3.4,554.37,.075],[6.6,369.99,.055]] },
+      { bass:110.00, pad:[220.00,277.18,329.63,415.30],
+        tune:[[0.6,554.37,.09],[3.6,659.25,.07],[7.0,440.00,.05]] },
+      { bass:61.74,  pad:[123.47,146.83,185.00,277.18],
+        tune:[[0.9,369.99,.085],[3.8,554.37,.075],[7.2,293.66,.05]] },
+      { bass:98.00,  pad:[196.00,246.94,293.66,369.99],
+        tune:[[0.7,493.88,.09],[3.5,739.99,.065],[6.8,392.00,.055]] }
+    ];
+    // LATE NIGHT - A minor, low and very sparse
+    var NIGHT=[
+      { bass:55.00,  pad:[110.00,130.81,164.81,246.94],
+        tune:[[1.2,329.63,.075],[5.0,246.94,.055]] },
+      { bass:43.65,  pad:[87.31,110.00,130.81,164.81],
+        tune:[[1.0,261.63,.08],[5.4,196.00,.05]] },
+      { bass:65.41,  pad:[130.81,164.81,196.00,246.94],
+        tune:[[1.3,392.00,.075],[5.2,293.66,.055]] },
+      { bass:41.20,  pad:[82.41,98.00,123.47,146.83],
+        tune:[[1.1,246.94,.07],[5.6,164.81,.05]] }
+    ];
+    // BRIGHT - C major, quicker, more movement
+    var BRIGHT=[
+      { bass:130.81, pad:[261.63,329.63,392.00,523.25],
+        tune:[[0.3,523.25,.09],[1.7,659.25,.08],[3.2,587.33,.07],[4.6,523.25,.06]] },
+      { bass:123.47, pad:[246.94,293.66,392.00,493.88],
+        tune:[[0.3,493.88,.09],[1.8,587.33,.08],[3.3,784.00,.07],[4.7,659.25,.055]] },
+      { bass:110.00, pad:[220.00,261.63,329.63,440.00],
+        tune:[[0.3,659.25,.09],[1.7,523.25,.08],[3.2,440.00,.07],[4.8,523.25,.06]] },
+      { bass:87.31,  pad:[174.61,220.00,261.63,349.23],
+        tune:[[0.3,698.46,.095],[1.9,587.33,.08],[3.4,523.25,.07],[4.9,440.00,.055]] }
+    ];
+    var MOODS=[
+      { id:"warm",   name:"Warm",       prog:DUSK,   bar:8.0  },
+      { id:"dreamy", name:"Dreamy",     prog:DREAMY, bar:11.0 },
+      { id:"night",  name:"Late night", prog:NIGHT,  bar:9.5  },
+      { id:"bright", name:"Bright",     prog:BRIGHT, bar:6.5  }
+    ];
+    var moodIx=0, dawnOn=false;
+    try{
+      var sm=localStorage.getItem("tofu.mood");
+      for (var mi=0;mi<MOODS.length;mi++) if (MOODS[mi].id===sm) moodIx=mi;
+    }catch(e){}
+    var prog=MOODS[moodIx].prog;
+    var BAR=MOODS[moodIx].bar;                       // one chord, and its phrase, every 8s
 
     function init(){
       if (ctx) return true;
@@ -743,7 +806,22 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     return {
       start: wake,
       sfx: function(k,v){ if (ctx && on && SFX[k]) SFX[k](v); },
-      chordTo: function(which){ prog = (which==="dawn") ? DAWN : DUSK; },
+      chordTo: function(which){
+        dawnOn = (which==="dawn");
+        prog = dawnOn ? DAWN : MOODS[moodIx].prog;
+        BAR  = dawnOn ? 8.0  : MOODS[moodIx].bar;
+      },
+      moods: function(){
+        var out=[]; for (var i=0;i<MOODS.length;i++) out.push(MOODS[i].name); return out;
+      },
+      moodIndex: function(){ return moodIx; },
+      setMood: function(i){
+        if (i<0||i>=MOODS.length) return moodIx;
+        moodIx=i;
+        try{ localStorage.setItem("tofu.mood",MOODS[i].id); }catch(e){}
+        if (!dawnOn){ prog=MOODS[i].prog; BAR=MOODS[i].bar; }
+        return moodIx;
+      },
       state: function(){ return ctx ? ctx.state : "none"; },
       isLive: function(){ return !!ctx && on && ctx.state==="running"; },
       setOn: function(v){
@@ -945,6 +1023,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
               catch(e){ hasGL=false; } }
 
   var scene, cam, lamp, island, objs=[], snow=null, clouds=null, ray, ptr=new THREE.Vector2(-9,-9);
+  var mouseX=innerWidth/2, mouseY=innerHeight/2;
   var S1,S2,S3,S4,S5, flies=null, postbox=null, envelope=null, orb=null, stars=null, wheel=null, lever=null, printer=null, slips=[];
   var yaw=Math.random()*6.2832, vYaw=0, drag=false, moved=0, lastX=0, hov=-1;
   var CAMD=17.8, cur=0;
@@ -1367,7 +1446,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   var D2=15.4, D3=13.2, D4=11.5, D5=11, envFly=0, flagUp=0;
   var camWant=new THREE.Vector3(), lookWant=new THREE.Vector3(),
       lookNow=new THREE.Vector3(), camReady=false;
-  addEventListener("resize",resize);
+  addEventListener("resize",function(){ resize(); layoutCats(); });
 
   /* ══════ scene switching ═══════════════════════════════ */
   var flash=document.getElementById("flash");
@@ -1427,12 +1506,18 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   cv.addEventListener("pointerdown",function(e){ drag=true; moved=0; lastX=e.clientX; });
   addEventListener("pointermove",function(e){
     ptr.x=(e.clientX/innerWidth)*2-1; ptr.y=-(e.clientY/innerHeight)*2+1;
+    mouseX=e.clientX; mouseY=e.clientY;
     if(!drag) return;
     var dx=e.clientX-lastX; moved+=Math.abs(dx);
     if (cur===0){ vYaw=dx*.005; yaw+=vYaw; }
     lastX=e.clientX;
   },{passive:true});
   addEventListener("pointerup",function(e){
+    // a cat sits in front of everything, so it gets the tap first
+    if (moved<9 && catOn && !cardOpen()){
+      var ci=catAt(e.clientX,e.clientY);
+      if (ci>=0){ pokeCat(ci); drag=false; return; }
+    }
     if (drag && moved<9 && !cardOpen() && !document.getElementById("fin").classList.contains("on")){
       var pad=e.pointerType==="touch"?26:8, v=new THREE.Vector2();
       var off=[[0,0],[pad,0],[-pad,0],[0,pad],[0,-pad],[pad,pad],[-pad,-pad]];
@@ -1762,6 +1847,154 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
             "Wear the saree. This is the fourth time of asking."]
   };
 
+  /* ══════ the cats ══════════════════════════════════════
+     Their own overlay scene with an orthographic camera in screen
+     units, so they wander the whole page whichever room is showing. */
+  var catScene=null, catCam=null, cats=[], catOn=true;
+  try{ catOn = localStorage.getItem("tofu.cats")!=="0"; }catch(e){}
+
+  var CAT_KINDS=[
+    { id:"persian", name:"the Persian", fur:0xF2E4D4, ear:0xE2C4C0, eye:0x6E8FA8,
+      round:1.28, flat:true,
+      says:["mrrp.","Persian. Extremely unbothered.","Judging the itinerary.","Has opinions about the sofa."] },
+    { id:"tofu",    name:"Tofu",        fur:0xFFB765, ear:0xFF8E7F, eye:0x2E7D5B,
+      round:1.0,  flat:false,
+      says:["Tofu says hello.","This one already has a name.","Tofu approves of the plan.","prrrrr."] },
+    { id:"siamese", name:"the Siamese", fur:0xEFE3CE, ear:0x5A4636, eye:0x4FA8D8,
+      round:.92,  flat:false,
+      says:["Loud. Obviously.","Siamese. Will talk back.","Wants to come to Spiti.","Demands attention."] }
+  ];
+
+  function buildKitty(k){
+    var g=new THREE.Group();
+    var F=function(hex){ return new THREE.MeshLambertMaterial({color:new THREE.Color(hex)}); };
+    var body=new THREE.Mesh(new THREE.SphereGeometry(30*k.round,20,16),F(k.fur));
+    body.scale.set(1,.82,1); body.position.y=26*k.round; g.add(body);
+    var head=new THREE.Group();
+    var skull=new THREE.Mesh(new THREE.SphereGeometry(21*k.round,20,16),F(k.fur));
+    if (k.flat) skull.scale.set(1.12,1,.86);
+    head.add(skull);
+    var earG=new THREE.ConeGeometry(8*k.round,13*k.round,4);
+    var e1=new THREE.Mesh(earG,F(k.ear)); e1.position.set(-12*k.round,17*k.round,0); e1.rotation.z=.26; head.add(e1);
+    var e2=new THREE.Mesh(earG,F(k.ear)); e2.position.set( 12*k.round,17*k.round,0); e2.rotation.z=-.26; head.add(e2);
+    var eyeG=new THREE.SphereGeometry(4.2*k.round,12,10);
+    var y1=new THREE.Mesh(eyeG,F(k.eye)); y1.position.set(-7.5*k.round,2,17*k.round); head.add(y1);
+    var y2=new THREE.Mesh(eyeG,F(k.eye)); y2.position.set( 7.5*k.round,2,17*k.round); head.add(y2);
+    var nose=new THREE.Mesh(new THREE.SphereGeometry(2.6*k.round,8,8),F(0xE08090));
+    nose.position.set(0,-5*k.round,19*k.round); head.add(nose);
+    head.position.set(0,58*k.round,2); g.add(head);
+    var tail=new THREE.Mesh(new THREE.CylinderGeometry(3*k.round,4*k.round,40*k.round,8),F(k.fur));
+    tail.position.set(0,30*k.round,-26*k.round); g.add(tail);
+    var legG=new THREE.CylinderGeometry(5*k.round,6*k.round,16*k.round,8);
+    [[-13,14],[13,14],[-13,-12],[13,-12]].forEach(function(p){
+      var l=new THREE.Mesh(legG,F(k.fur));
+      l.position.set(p[0]*k.round,8*k.round,p[1]*k.round); g.add(l);
+    });
+    g.userData={ kind:k, head:head, tail:tail, eyes:[y1,y2],
+                 vx:0, target:null, pause:1+Math.random()*3,
+                 hop:0, blink:2+Math.random()*4, face:1 };
+    return g;
+  }
+
+  function initCats(){
+    if (!hasGL) return;
+    catScene=new THREE.Scene();
+    catScene.add(new THREE.HemisphereLight(0xFFF0DC,0x6A5A86,1.15));
+    var cl=new THREE.DirectionalLight(0xFFFFFF,.55); cl.position.set(80,180,140);
+    catScene.add(cl);
+    catCam=new THREE.OrthographicCamera(0,innerWidth,0,-innerHeight,-600,600);
+    for (var i=0;i<CAT_KINDS.length;i++){
+      var c=buildKitty(CAT_KINDS[i]);
+      c.position.set((innerWidth/(CAT_KINDS.length+1))*(i+1), -(innerHeight-172), 0);
+      c.userData.pause=i*1.4;
+      cats.push(c); catScene.add(c);
+    }
+    layoutCats();
+  }
+  function layoutCats(){
+    if (!catCam) return;
+    catCam.left=0; catCam.right=innerWidth; catCam.top=0; catCam.bottom=-innerHeight;
+    catCam.updateProjectionMatrix();
+    var floor = -(innerHeight - (innerWidth<620 ? 132 : 172));
+    for (var i=0;i<cats.length;i++){
+      cats[i].position.y = floor;
+      cats[i].position.x = Math.min(Math.max(cats[i].position.x,70), innerWidth-70);
+      var s = innerWidth<620 ? .62 : .86;
+      cats[i].scale.setScalar(s);
+    }
+  }
+
+  function stepCats(dt,t){
+    if (!catScene || !catOn) return;
+    for (var i=0;i<cats.length;i++){
+      var c=cats[i], u=c.userData;
+      // wander
+      if (u.target===null){
+        u.pause-=dt;
+        if (u.pause<=0){ u.target = 70+Math.random()*Math.max(innerWidth-140,120); }
+      } else {
+        // keep a little distance from each other
+        for (var q=0;q<cats.length;q++){
+          if (q===i) continue;
+          var gap=c.position.x-cats[q].position.x;
+          if (Math.abs(gap)<86) c.position.x += (gap>=0?1:-1)*48*dt;
+        }
+        var d=u.target-c.position.x;
+        if (Math.abs(d)<4){ u.target=null; u.pause=2+Math.random()*5; u.vx=0; }
+        else {
+          var dir=d>0?1:-1;
+          u.vx += (dir*46 - u.vx)*Math.min(1,dt*3);
+          c.position.x += u.vx*dt;
+          u.face += ((dir>0?1:-1) - u.face)*Math.min(1,dt*6);
+          c.position.y += Math.sin(t*9)*0.35;          // a little bob while walking
+        }
+      }
+      c.rotation.y = u.face*Math.PI*0.5*0.34;
+      // the head follows the pointer
+      var hx=(mouseX - c.position.x)/260, hy=(-mouseY - c.position.y)/240;
+      u.head.rotation.y += (Math.max(-.7,Math.min(.7,hx)) - u.head.rotation.y)*Math.min(1,dt*5);
+      u.head.rotation.x += (Math.max(-.4,Math.min(.45,-hy)) - u.head.rotation.x)*Math.min(1,dt*5);
+      // tail swish, blink, hop
+      u.tail.rotation.x = -0.5 + Math.sin(t*1.9+i)*0.34;
+      u.blink-=dt;
+      if (u.blink<0){ u.blink=2.5+Math.random()*4.5; }
+      var sq = (u.blink<0.12) ? 0.15 : 1;
+      u.eyes[0].scale.y=u.eyes[1].scale.y=sq;
+      if (u.hop>0){
+        u.hop=Math.max(0,u.hop-dt*2.2);
+        c.position.y += Math.sin((1-u.hop)*Math.PI)*26;
+        c.scale.y = c.scale.x*(1+Math.sin((1-u.hop)*Math.PI)*.12);
+      } else c.scale.y=c.scale.x;
+    }
+  }
+
+  function catAt(px,py){
+    if (!catOn) return -1;
+    for (var i=cats.length-1;i>=0;i--){
+      var c=cats[i];
+      var dx=px-c.position.x, dy=(-py)-(c.position.y+52*c.scale.x);
+      if (Math.abs(dx)<48*c.scale.x && Math.abs(dy)<62*c.scale.x) return i;
+    }
+    return -1;
+  }
+  function pokeCat(i){
+    var c=cats[i], u=c.userData;
+    u.hop=1; u.target=null; u.pause=1.4;
+    AUD.sfx("hover"); AUD.sfx("found");
+    var says=u.kind.says;
+    catSay(c, says[Math.floor(Math.random()*says.length)]);
+  }
+  var catBubble=document.getElementById("catsay"), bubbleT=null;
+  function catSay(c,txt){
+    if (!catBubble) return;
+    catBubble.textContent=txt;
+    catBubble.style.left=c.position.x+"px";
+    catBubble.style.top=(innerHeight+c.position.y-96*c.scale.x)+"px";
+    catBubble.classList.add("on");
+    clearTimeout(bubbleT);
+    bubbleT=setTimeout(function(){ catBubble.classList.remove("on"); },2600);
+  }
+
   /* ══════ the third of February ═════════════════════════
      She gave the date on 17 August 2026 at 9:33 pm: "3rd feb, 2003". */
   var BD_MONTH=1, BD_DAY=3;            // February is month 1
@@ -1905,7 +2138,10 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
      browser and she chooses when to send them. Nothing leaves silently. */
   var SEND_TO = {
     whatsapp: "",                      // digits with country code, no + or spaces
-    email: "sujaldua28@gmail.com"
+    email: "sujaldua28@gmail.com",
+    // FormSubmit relays a plain POST to that address - no account, no key.
+    // If it ever fails we fall back to opening her mail app instead.
+    post: "https://formsubmit.co/ajax/sujaldua28@gmail.com"
   };
   var PKEY="tofu.hers.v1";
   var pf=[document.getElementById("f1"),document.getElementById("f2"),
@@ -1942,19 +2178,43 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   }
   function pFlyEnvelope(){ envFly=1; AUD.sfx("open"); }
 
+  function mailFallback(body){
+    window.location.href = "mailto:"+SEND_TO.email
+      +"?subject="+encodeURIComponent("From the small world")
+      +"&body="+encodeURIComponent(body);
+    pHint.textContent="Opening your mail app instead \u2014 press send there.";
+  }
   document.getElementById("pSend").addEventListener("click",function(){
     var body=pText();
     if (!body){ pHint.textContent="Write something first, even one word."; return; }
     pFlyEnvelope();
+    var btn=this;
+    if (SEND_TO.post && window.fetch){
+      btn.disabled=true; pHint.textContent="Sending\u2026";
+      var payload={ _subject:"From the small world", message:body };
+      for (var i=0;i<pf.length;i++) if (pf[i] && pf[i].value.trim()) payload[pQs[i]]=pf[i].value.trim();
+      var done=false;
+      var finish=function(ok){
+        if (done) return; done=true; btn.disabled=false;
+        if (ok){
+          pHint.textContent="Sent. It is already with him \u2014 you do not have to do anything else.";
+          AUD.sfx("found");
+        } else mailFallback(body);
+      };
+      setTimeout(function(){ finish(false); }, 9000);     // never leave her waiting
+      fetch(SEND_TO.post,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+        body:JSON.stringify(payload)
+      }).then(function(r){ return r.ok ? r.json().catch(function(){return {};}) : null; })
+        .then(function(j){ finish(!!j); })
+        .catch(function(){ finish(false); });
+      return;
+    }
     if (SEND_TO.whatsapp){
       window.open("https://wa.me/"+SEND_TO.whatsapp+"?text="+encodeURIComponent(body),"_blank");
       pHint.textContent="WhatsApp should be opening with it typed out. Press send there.";
-    } else {
-      window.location.href = "mailto:"+SEND_TO.email
-        +"?subject="+encodeURIComponent("From the small world")
-        +"&body="+encodeURIComponent(body);
-      pHint.textContent="Your mail app should be opening with it written. Press send there.";
-    }
+    } else mailFallback(body);
   });
   document.getElementById("pCopy").addEventListener("click",function(){
     var body=pText();
@@ -2054,6 +2314,28 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   var volPop=document.getElementById("volpop"), volIn=document.getElementById("vol"),
       vMute=document.getElementById("vmute");
   volIn.value = String(Math.round(AUD.getVol()*100));
+  var moodGrid=document.getElementById("moodgrid");
+  function paintMoods(){
+    var k=moodGrid.children;
+    for (var i=0;i<k.length;i++)
+      k[i].setAttribute("aria-pressed", i===AUD.moodIndex() ? "true":"false");
+  }
+  (function(){
+    var names=AUD.moods();
+    for (var i=0;i<names.length;i++){
+      (function(ix){
+        var b=document.createElement("button");
+        b.type="button"; b.textContent=names[ix];
+        b.addEventListener("click",function(){
+          AUD.start(); AUD.setMood(ix);
+          if (!AUD.isOn()) AUD.toggle();
+          paintMoods(); paintSnd(); AUD.sfx("open");
+        });
+        moodGrid.appendChild(b);
+      })(i);
+    }
+    paintMoods();
+  })();
   function paintVol(){
     vMute.setAttribute("aria-pressed", AUD.isOn() ? "false" : "true");
     vMute.textContent = AUD.isOn() ? "Mute" : "Unmute";
@@ -2064,6 +2346,18 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     paintSnd(); paintVol();
   });
   vMute.addEventListener("click",function(){ AUD.toggle(); paintSnd(); paintVol(); });
+  var vCats=document.getElementById("vcats");
+  function paintCats(){
+    vCats.textContent = catOn ? "Hide the cats" : "Bring the cats back";
+    vCats.setAttribute("aria-pressed", catOn ? "false" : "true");
+  }
+  vCats.addEventListener("click",function(){
+    catOn=!catOn;
+    try{ localStorage.setItem("tofu.cats", catOn?"1":"0"); }catch(e){}
+    if (catBubble) catBubble.classList.remove("on");
+    paintCats(); AUD.sfx("swap");
+  });
+  paintCats();
   document.addEventListener("click",function(e){
     if (!volPop.contains(e.target) && e.target!==sndBtn) volPop.classList.remove("on");
   });
@@ -2250,6 +2544,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         tag.style.top=((-pp.y*.5+.5)*innerHeight)+"px";
       }
     } else if (cur!==0){ cv.style.cursor="pointer"; }
+    if (catOn && catAt(mouseX,mouseY)>=0) cv.style.cursor="pointer";
 
     // glide between rooms instead of cutting - framerate independent
     if (!camReady){ cam.position.copy(camWant); lookNow.copy(lookWant); camReady=true; }
@@ -2260,7 +2555,9 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     }
     cam.lookAt(lookNow);
 
+    stepCats(dt,t);
     R.render(scene,cam);
+    if (catScene && catOn){ R.autoClear=false; R.clearDepth(); R.render(catScene,catCam); R.autoClear=true; }
   }
 
   function boot(){
@@ -2279,7 +2576,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       document.body.appendChild(fb);
       return;
     }
-    clock=new THREE.Clock(); build(); tick();
+    clock=new THREE.Clock(); build(); initCats(); tick();
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(boot,boot);
   else boot();
