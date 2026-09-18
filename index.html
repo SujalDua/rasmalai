@@ -414,6 +414,7 @@
       <input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume">
       <button class="vmute" id="vmute" type="button">Mute</button>
       <button class="vmute" id="vcats" type="button" style="margin-top:6px">Hide the cats</button>
+      <button class="vmute" id="vwipe" type="button" style="margin-top:10px">Reset everything</button>
     </div>
   </div>
 </div>
@@ -946,6 +947,38 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   /* ══════ scene 4: a quiz about her own life ════════════
      Every right answer is something she said and somebody kept. */
   var QUIZ = [
+    { q:"You once listed exactly two wishes. What were they?",
+      a:["A good job and a quiet flat","Making my family proud, and exploring the world with my person",
+         "Money and travel","Abs and a promotion"], c:1,
+      note:"“1. Making my family proud  2. Explore the world with loml.” Two lines, fourteenth of August. Nothing else on the list." },
+    { q:"What do you genuinely hate doing — and did anyway?",
+      a:["Flying","Seeing doctors","Public speaking","Long drives"], c:1,
+      note:"“i hate seein doctors.” You went for the bloodwork regardless, and came out pleased." },
+    { q:"Which city do you actually want to live in?",
+      a:["Gurgaon","Delhi","Bangalore","Lucknow"], c:1,
+      note:"“Na mujhe gurgaon pasand aaya hai… I’m looking for a place in delhi only.”" },
+    { q:"Finish your own proverb: “darr ke aage…”",
+      a:["…jeet hai","…diet coke","…leg day","…Spiti"], c:1,
+      note:"Not the original. Yours is better." },
+    { q:"According to you, what is the correct order of operations?",
+      a:["Shaadi, then everything else","Thoda luv shuv, phir date shate, phir baaki sab",
+         "Career first, always","There is no order"], c:1,
+      note:"Said while several people were trying to get you married off. The sequencing was non-negotiable." },
+    { q:"Which phone do you want, and which will you actually buy?",
+      a:["iPhone / Android","The Samsung flip / an iPhone anyway","Pixel / iPhone","Nothing / nothing"], c:1,
+      note:"“mujhe wo samsoong flip chahiye idk why… baqi ill get iOS only.” Both true at once." },
+    { q:"What are you quietly proud of being?",
+      a:["An engineer","A Rajput","The eldest","A morning person"], c:1,
+      note:"“Mujhe toh pasand hai being a rajput.” Stated plainly, no elaboration offered." },
+    { q:"Your training week, as you wrote it out:",
+      a:["Gym daily, nothing else","Weights 5x, running 1-2x, 10k steps","Only cardio","Yoga and walking"], c:1,
+      note:"Plus creatine, plus protein. You had the whole thing costed before you started." },
+    { q:"What did you say you wanted to delete?",
+      a:["Instagram","2022","Your gallery","Nothing"], c:1,
+      note:"Right after saying you had the best childhood. Both things were true in the same minute." },
+    { q:"What did you say you wished about me, at twenty to eleven at night?",
+      a:["That I texted less","“i wish i was so cool like you”","That I liked Gurgaon","Nothing at all"], c:1,
+      note:"For the record, the evidence points the other way." },
     { q:"What time was your earliest good morning?",
       a:["4:40 am","5:12 am","6:02 am","7:15 am"], c:1,
       note:"5:12 am. The next three are 5:22, 5:50 and 6:02. Nobody has ever beaten you to it." },
@@ -1869,54 +1902,244 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   try{ catOn = localStorage.getItem("tofu.cats")!=="0"; }catch(e){}
 
   var CAT_KINDS=[
-    { id:"persian", name:"the Persian", fur:0xF2E4D4, ear:0xE2C4C0, eye:0x6E8FA8,
-      round:1.28, flat:true,
+    { id:"persian", light:"#F7EFE2", dark:"#D9C7B4", fleck:"120,100,80", point:"#E2C4C0",
+      eye:"#7FA8C8", fluffy:true,  flat:true,  wedge:false,
+      pointEars:false, pointPaws:false, pointTail:false, stripes:false,
+      name:"the Persian",
       says:["mrrp.","Persian. Extremely unbothered.","Judging the itinerary.","Has opinions about the sofa."] },
-    { id:"tofu",    name:"Tofu",        fur:0xFFB765, ear:0xFF8E7F, eye:0x2E7D5B,
-      round:1.0,  flat:false,
+    { id:"tofu", light:"#FFC177", dark:"#E08A3C", fleck:"140,80,30", point:"#E9924F",
+      eye:"#4FA86B", fluffy:false, flat:false, wedge:false,
+      pointEars:false, pointPaws:false, pointTail:false, stripes:true,
+      name:"Tofu",
       says:["Tofu says hello.","This one already has a name.","Tofu approves of the plan.","prrrrr."] },
-    { id:"siamese", name:"the Siamese", fur:0xEFE3CE, ear:0x5A4636, eye:0x4FA8D8,
-      round:.92,  flat:false,
+    { id:"siamese", light:"#F2E7D2", dark:"#DFCDB0", fleck:"120,100,80", point:"#4A382E",
+      eye:"#4FB4E8", fluffy:false, flat:false, wedge:true,
+      pointEars:true,  pointPaws:true,  pointTail:true,  stripes:false,
+      name:"the Siamese",
       says:["Loud. Obviously.","Siamese. Will talk back.","Wants to come to Spiti.","Demands attention."] }
   ];
 
+  /* ── fur, built once per breed ─────────────────────────── */
+  var FURCACHE={};
+  function furTex(k){
+    if (FURCACHE[k.id]) return FURCACHE[k.id];
+    var S=256, c=document.createElement("canvas"); c.width=c.height=S;
+    var x=c.getContext("2d");
+    var g=x.createLinearGradient(0,0,0,S);
+    g.addColorStop(0,k.light); g.addColorStop(1,k.dark);
+    x.fillStyle=g; x.fillRect(0,0,S,S);
+    if (k.stripes){                       // mackerel tabby bands
+      for (var i=0;i<14;i++){
+        x.save(); x.translate(0,i*18); x.rotate(-0.12);
+        x.fillStyle="rgba(86,52,24,.45)";
+        x.beginPath(); x.moveTo(0,0); x.quadraticCurveTo(128,9,256,-4);
+        x.lineTo(256,4); x.quadraticCurveTo(128,16,0,7); x.fill(); x.restore();
+      }
+    }
+    for (var f=0;f<1100;f++){             // directional fur flecks
+      var fx=Math.random()*S, fy=Math.random()*S;
+      x.strokeStyle="rgba("+k.fleck+","+(0.05+Math.random()*0.12).toFixed(2)+")";
+      x.lineWidth=0.8; x.beginPath(); x.moveTo(fx,fy); x.lineTo(fx+2,fy+5); x.stroke();
+    }
+    var t=new THREE.CanvasTexture(c);
+    t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=4;
+    if (THREE.SRGBColorSpace) t.colorSpace=THREE.SRGBColorSpace;
+    FURCACHE[k.id]=t; return t;
+  }
+  function irisTex(hex){
+    var S=64, c=document.createElement("canvas"); c.width=c.height=S;
+    var x=c.getContext("2d");
+    var g=x.createRadialGradient(S/2,S/2,2,S/2,S/2,S/2);
+    g.addColorStop(0,"#fdf7d8"); g.addColorStop(.45,hex); g.addColorStop(1,"#2a1d12");
+    x.fillStyle=g; x.beginPath(); x.arc(S/2,S/2,S/2,0,6.2832); x.fill();
+    x.fillStyle="#120c08";                      // vertical slit
+    x.beginPath(); x.ellipse(S/2,S/2,S*0.09,S*0.36,0,0,6.2832); x.fill();
+    var t=new THREE.CanvasTexture(c);
+    if (THREE.SRGBColorSpace) t.colorSpace=THREE.SRGBColorSpace;
+    return t;
+  }
+  function blobTex(){
+    var S=64, c=document.createElement("canvas"); c.width=c.height=S;
+    var x=c.getContext("2d");
+    var g=x.createRadialGradient(S/2,S/2,1,S/2,S/2,S/2);
+    g.addColorStop(0,"rgba(20,14,40,.75)"); g.addColorStop(1,"rgba(20,14,40,0)");
+    x.fillStyle=g; x.fillRect(0,0,S,S);
+    return new THREE.CanvasTexture(c);
+  }
+  var SHADOWTEX=null;
+
+  // push vertices along their normals with smooth noise - turns a primitive
+  // into something that reads as a soft body rather than a ball
+  function fluff(geo,amp,freq,seed){
+    var p=geo.attributes.position, n=geo.attributes.normal, v=new THREE.Vector3();
+    for (var i=0;i<p.count;i++){
+      v.fromBufferAttribute(p,i);
+      var d=Math.sin(v.x*freq+seed)*Math.sin(v.y*freq*1.3+seed*2)*Math.sin(v.z*freq*0.9+seed*3);
+      p.setXYZ(i, v.x+n.getX(i)*d*amp, v.y+n.getY(i)*d*amp, v.z+n.getZ(i)*d*amp);
+    }
+    geo.computeVertexNormals();
+  }
+  // bake soft occlusion into vertex colour: darker underneath, lighter on top
+  // NB: deliberately NOT called shade() - shade(group) already exists above
+  function bakeAO(geo){
+    var p=geo.attributes.position, col=[];
+    for (var i=0;i<p.count;i++){
+      var y=p.getY(i), a=0.60+0.40*Math.min(1,Math.max(0,(y+20)/34));
+      col.push(a,a,a);
+    }
+    geo.setAttribute("color", new THREE.Float32BufferAttribute(col,3));
+  }
+
   function buildKitty(k){
-    var g=new THREE.Group();
-    var F=function(hex){ return new THREE.MeshLambertMaterial({color:new THREE.Color(hex)}); };
-    var body=new THREE.Mesh(new THREE.SphereGeometry(30*k.round,20,16),F(k.fur));
-    body.scale.set(1,.82,1); body.position.y=26*k.round; g.add(body);
-    var head=new THREE.Group();
-    var skull=new THREE.Mesh(new THREE.SphereGeometry(21*k.round,20,16),F(k.fur));
-    if (k.flat) skull.scale.set(1.12,1,.86);
-    head.add(skull);
-    var earG=new THREE.ConeGeometry(8*k.round,13*k.round,4);
-    var e1=new THREE.Mesh(earG,F(k.ear)); e1.position.set(-12*k.round,17*k.round,0); e1.rotation.z=.26; head.add(e1);
-    var e2=new THREE.Mesh(earG,F(k.ear)); e2.position.set( 12*k.round,17*k.round,0); e2.rotation.z=-.26; head.add(e2);
-    var eyeG=new THREE.SphereGeometry(4.2*k.round,12,10);
-    var y1=new THREE.Mesh(eyeG,F(k.eye)); y1.position.set(-7.5*k.round,2,17*k.round); head.add(y1);
-    var y2=new THREE.Mesh(eyeG,F(k.eye)); y2.position.set( 7.5*k.round,2,17*k.round); head.add(y2);
-    var nose=new THREE.Mesh(new THREE.SphereGeometry(2.6*k.round,8,8),F(0xE08090));
-    nose.position.set(0,-5*k.round,19*k.round); head.add(nose);
-    head.position.set(0,58*k.round,2); g.add(head);
-    var tail=new THREE.Mesh(new THREE.CylinderGeometry(3*k.round,4*k.round,40*k.round,8),F(k.fur));
-    tail.position.set(0,30*k.round,-26*k.round); g.add(tail);
-    var legG=new THREE.CylinderGeometry(5*k.round,6*k.round,16*k.round,8);
-    [[-13,14],[13,14],[-13,-12],[13,-12]].forEach(function(p){
-      var l=new THREE.Mesh(legG,F(k.fur));
-      l.position.set(p[0]*k.round,8*k.round,p[1]*k.round); g.add(l);
+    var root=new THREE.Group();
+    var fur=new THREE.MeshStandardMaterial({
+      map:furTex(k), bumpMap:furTex(k), bumpScale:0.45,
+      roughness:0.94, metalness:0, vertexColors:true });
+    var point=new THREE.MeshStandardMaterial({
+      color:new THREE.Color(k.point), roughness:0.95, metalness:0 });
+
+    // contact shadow - glues it to the page
+    if (!SHADOWTEX) SHADOWTEX=blobTex();
+    var sh=new THREE.Mesh(new THREE.PlaneGeometry(58,24),
+      new THREE.MeshBasicMaterial({map:SHADOWTEX,transparent:true,depthWrite:false,opacity:.42}));
+    sh.rotation.x=-Math.PI/2.1; sh.position.y=1; root.add(sh);
+
+    var spine=new THREE.Group(); root.add(spine);
+
+    // body: a capsule laid nose-to-tail, chest fuller than hips
+    var bg=new THREE.CapsuleGeometry(22,28,5,16);
+    bg.rotateZ(Math.PI/2);
+    var bp=bg.attributes.position, bv=new THREE.Vector3();
+    for (var i=0;i<bp.count;i++){
+      bv.fromBufferAttribute(bp,i);
+      var tpr=0.80+0.30*Math.min(1,Math.max(0,(bv.x+15)/33));
+      bp.setXYZ(i, bv.x, bv.y*tpr*0.90, bv.z*tpr);
+    }
+    bg.computeVertexNormals();
+    fluff(bg, k.fluffy?3.0:1.1, 0.16, 1.7);
+    bakeAO(bg);
+    var body=new THREE.Mesh(bg,fur); body.position.y=34; spine.add(body);
+
+    // a soft back-facing hull reads as a fur edge at this size
+    var hg=bg.clone(); var hp=hg.attributes.position, hn=hg.attributes.normal;
+    for (var j=0;j<hp.count;j++)
+      hp.setXYZ(j, hp.getX(j)+hn.getX(j)*(k.fluffy?5:2.2),
+                   hp.getY(j)+hn.getY(j)*(k.fluffy?5:2.2),
+                   hp.getZ(j)+hn.getZ(j)*(k.fluffy?5:2.2));
+    var hull=new THREE.Mesh(hg,new THREE.MeshBasicMaterial({
+      color:new THREE.Color(k.light), transparent:true, opacity:.34,
+      side:THREE.BackSide, depthWrite:false }));
+    hull.position.y=34; hull.renderOrder=-1; spine.add(hull);
+
+    // neck + head
+    var neck=new THREE.Group(); neck.position.set(26,46,0); spine.add(neck);
+    var head=new THREE.Group(); neck.add(head);
+    var sg=new THREE.SphereGeometry(16,16,12);
+    var sp=sg.attributes.position, sv=new THREE.Vector3();
+    for (var s=0;s<sp.count;s++){
+      sv.fromBufferAttribute(sp,s);
+      var yy=sv.y*0.93, xx=sv.x, zz=sv.z;
+      if (xx>5) xx += (k.flat? -1.9 : 3.4)*(xx-5)/11;     // muzzle, or Persian's flat face
+      if (k.wedge){ zz*=0.90; xx*=1.10; }
+      sp.setXYZ(s, xx, yy, zz);
+    }
+    sg.computeVertexNormals(); fluff(sg,k.fluffy?2.2:0.8,0.2,3.1); bakeAO(sg);
+    head.add(new THREE.Mesh(sg,fur));
+
+    // ears with a pink inner
+    var ears=[];
+    [-1,1].forEach(function(side){
+      var e=new THREE.Group();
+      var eg=new THREE.ConeGeometry(7,13,7,1); eg.scale(1,1,0.5);
+      var outer=new THREE.Mesh(eg, k.pointEars?point:fur); e.add(outer);
+      var ig=new THREE.ConeGeometry(7,13,7,1); ig.scale(0.62,0.62,0.5);
+      var inner=new THREE.Mesh(ig,new THREE.MeshBasicMaterial({color:0xE8A0A6}));
+      inner.position.set(0.6,0,1.1); e.add(inner);
+      e.position.set(-1,13,side*8.5); e.rotation.x=side*0.30; e.rotation.z=-0.12;
+      head.add(e); ears.push(e);
     });
-    g.userData={ kind:k, head:head, tail:tail, eyes:[y1,y2],
-                 vx:0, target:null, pause:1+Math.random()*3,
-                 hop:0, blink:2+Math.random()*4, face:1 };
-    return g;
+
+    // eyes: a painted iris, plus a catchlight that never dims
+    var eyes=[], iris=irisTex(k.eye);
+    [-1,1].forEach(function(side){
+      var ey=new THREE.Mesh(new THREE.SphereGeometry(3.9,12,10),
+        new THREE.MeshBasicMaterial({map:iris}));
+      ey.position.set(11.5,3,side*6.2); ey.rotation.y=Math.PI/2+side*0.18;
+      head.add(ey); eyes.push(ey);
+      var gl=new THREE.Mesh(new THREE.SphereGeometry(0.95,6,5),
+        new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false}));
+      gl.position.set(14.2,4.6,side*5.2); head.add(gl);
+    });
+    var nose=new THREE.Mesh(new THREE.SphereGeometry(2.1,8,7),
+      new THREE.MeshBasicMaterial({color:0xD98A92}));
+    nose.scale.set(1.2,0.8,1); nose.position.set(k.flat?15.2:17.5,-1.6,0); head.add(nose);
+
+    // whiskers
+    var wp=[];
+    [-1,1].forEach(function(side){
+      for (var w=0;w<3;w++){
+        var y=-1+w*1.5, spread=side*(4+w*0.6);
+        wp.push(15,y,side*3, 15+13,y+2.5-w*1.4,spread+side*9);
+      }
+    });
+    var wg=new THREE.BufferGeometry();
+    wg.setAttribute("position",new THREE.Float32BufferAttribute(wp,3));
+    head.add(new THREE.LineSegments(wg,new THREE.LineBasicMaterial({
+      color:0xffffff, transparent:true, opacity:.45 })));
+
+    // four two-bone legs
+    var legs=[];
+    [[18,7,0],[18,-7,0.25],[-16,7,0.5],[-16,-7,0.75]].forEach(function(L){
+      var hip=new THREE.Group(); hip.position.set(L[0],30,L[1]); spine.add(hip);
+      var up=new THREE.Mesh(new THREE.CapsuleGeometry(4.6,9,3,8), k.pointPaws?point:fur);
+      up.position.y=-5; hip.add(up);
+      var knee=new THREE.Group(); knee.position.y=-10; hip.add(knee);
+      var lo=new THREE.Mesh(new THREE.CapsuleGeometry(3.3,9,3,8), k.pointPaws?point:fur);
+      lo.position.y=-5; knee.add(lo);
+      var paw=new THREE.Mesh(new THREE.SphereGeometry(3.7,8,6), k.pointPaws?point:fur);
+      paw.scale.set(1,0.7,1.3); paw.position.set(1,-10.5,0); knee.add(paw);
+      legs.push({hip:hip,knee:knee,phase:L[2]});
+    });
+
+    // tail: six nested segments, so motion travels down it
+    var tail=[], parent=spine, r0=k.fluffy?7:4.0;
+    for (var s2=0;s2<6;s2++){
+      var seg=new THREE.Group();
+      seg.position.set(s2===0?-24:0, s2===0?34:0, 0);
+      var r=r0*(1-s2*0.13), r2=r0*(1-(s2+1)*0.13);
+      var tg=new THREE.CylinderGeometry(r2,r,8,7);
+      var tm=new THREE.Mesh(tg, (k.pointTail && s2>2)?point:fur);
+      tm.position.y=4; tm.rotation.x=0; seg.add(tm);
+      if (s2>0) seg.position.y=8;
+      parent.add(seg); parent=seg; tail.push(seg);
+    }
+
+    root.userData={ kind:k, spine:spine, neck:neck, head:head, ears:ears, eyes:eyes,
+                    legs:legs, tail:tail, shadow:sh,
+                    vx:0, target:null, pause:1+Math.random()*3, walk:0,
+                    hop:0, tapT:99, blink:2+Math.random()*4, face:1, baseY:0 };
+    return root;
   }
 
   function initCats(){
     if (!hasGL) return;
     catScene=new THREE.Scene();
-    catScene.add(new THREE.HemisphereLight(0xFFF0DC,0x6A5A86,1.15));
-    var cl=new THREE.DirectionalLight(0xFFFFFF,.55); cl.position.set(80,180,140);
-    catScene.add(cl);
+    catScene.add(new THREE.HemisphereLight(0xFFEEDD,0x3A3550,0.55));
+    var key=new THREE.DirectionalLight(0xFFF6E8,1.05); key.position.set(80,180,140);
+    catScene.add(key);
+    // a cool rim behind separates a small cat from a busy page
+    var rim=new THREE.DirectionalLight(0xBCD4FF,1.25); rim.position.set(-90,60,-150);
+    catScene.add(rim);
+    // a tiny environment so MeshStandardMaterial has something to reflect
+    try{
+      var envS=new THREE.Scene();
+      var sky=new THREE.Mesh(new THREE.SphereGeometry(500,8,6),
+        new THREE.MeshBasicMaterial({color:0x8899cc,side:THREE.BackSide}));
+      envS.add(sky);
+      var pm=new THREE.PMREMGenerator(R);
+      catScene.environment=pm.fromScene(envS,0,1,1000).texture;
+      pm.dispose();
+    }catch(e){}
     catCam=new THREE.OrthographicCamera(0,innerWidth,0,-innerHeight,-600,600);
     for (var i=0;i<CAT_KINDS.length;i++){
       var c=buildKitty(CAT_KINDS[i]);
@@ -1932,54 +2155,89 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     catCam.updateProjectionMatrix();
     var floor = -(innerHeight - (innerWidth<620 ? 132 : 172));
     for (var i=0;i<cats.length;i++){
-      cats[i].position.y = floor;
-      cats[i].position.x = Math.min(Math.max(cats[i].position.x,70), innerWidth-70);
-      var s = innerWidth<620 ? .62 : .86;
-      cats[i].scale.setScalar(s);
+      cats[i].userData.baseY=floor;
+      cats[i].position.y=floor;
+      cats[i].position.x=Math.min(Math.max(cats[i].position.x,70), innerWidth-70);
+      cats[i].scale.setScalar(innerWidth<620 ? .62 : .86);
     }
   }
 
   function stepCats(dt,t){
     if (!catScene || !catOn) return;
+    var k1=1-Math.pow(0.0008,dt);
     for (var i=0;i<cats.length;i++){
-      var c=cats[i], u=c.userData;
-      // wander
+      var c=cats[i], u=c.userData, moving=false;
       if (u.target===null){
         u.pause-=dt;
-        if (u.pause<=0){ u.target = 70+Math.random()*Math.max(innerWidth-140,120); }
+        if (u.pause<=0) u.target = 70+Math.random()*Math.max(innerWidth-140,120);
       } else {
-        // keep a little distance from each other
         for (var q=0;q<cats.length;q++){
           if (q===i) continue;
           var gap=c.position.x-cats[q].position.x;
-          if (Math.abs(gap)<86) c.position.x += (gap>=0?1:-1)*48*dt;
+          if (Math.abs(gap)<92) c.position.x += (gap>=0?1:-1)*44*dt;
         }
         var d=u.target-c.position.x;
-        if (Math.abs(d)<4){ u.target=null; u.pause=2+Math.random()*5; u.vx=0; }
+        if (Math.abs(d)<5){ u.target=null; u.pause=2+Math.random()*5; u.vx=0; }
         else {
           var dir=d>0?1:-1;
-          u.vx += (dir*46 - u.vx)*Math.min(1,dt*3);
+          u.vx += (dir*44 - u.vx)*Math.min(1,dt*3);
           c.position.x += u.vx*dt;
-          u.face += ((dir>0?1:-1) - u.face)*Math.min(1,dt*6);
-          c.position.y += Math.sin(t*9)*0.35;          // a little bob while walking
+          u.face += (dir - u.face)*Math.min(1,dt*6);
+          moving=true;
         }
       }
-      c.rotation.y = u.face*Math.PI*0.5*0.34;
-      // the head follows the pointer
-      var hx=(mouseX - c.position.x)/260, hy=(-mouseY - c.position.y)/240;
-      u.head.rotation.y += (Math.max(-.7,Math.min(.7,hx)) - u.head.rotation.y)*Math.min(1,dt*5);
-      u.head.rotation.x += (Math.max(-.4,Math.min(.45,-hy)) - u.head.rotation.x)*Math.min(1,dt*5);
-      // tail swish, blink, hop
-      u.tail.rotation.x = -0.5 + Math.sin(t*1.9+i)*0.34;
+      c.rotation.y = u.face*0.52;
+
+      // lateral-sequence walk - the gait that actually reads as a cat
+      var spd=Math.abs(u.vx);
+      u.walk += dt*(spd/30);
+      var th=u.walk*Math.PI*2, amp=Math.min(1,spd/40);
+      for (var g=0;g<u.legs.length;g++){
+        var L=u.legs[g], a=th+L.phase*Math.PI*2;
+        var sn=Math.sin(a), cs=Math.cos(a);
+        L.hip.rotation.z  += ((0.52*sn*amp) - L.hip.rotation.z)*k1;
+        L.knee.rotation.z += ((0.44*Math.max(0,-cs)*amp+0.10) - L.knee.rotation.z)*k1;
+      }
+      // body bob, roll, and a neck that cancels it so the skull stays level
+      var bob = moving ? 1.5*Math.abs(Math.sin(2*th))*amp : 0;
+      var breathe = 1+0.012*Math.sin(t*2.5);
+      u.spine.position.y = bob;
+      u.spine.rotation.z = moving ? 0.05*Math.sin(th)*amp : 0;
+      u.spine.scale.y = breathe;
+      u.neck.position.y = 46 - bob*0.8;
+
+      // head follows the cursor
+      var hx=(mouseX - c.position.x)/300, hy=(-mouseY - c.position.y - 60)/260;
+      var ty=Math.max(-.65,Math.min(.65,hx))*u.face, tx=Math.max(-.28,Math.min(.35,-hy));
+      u.head.rotation.y += (ty - u.head.rotation.y)*Math.min(1,dt*7);
+      u.head.rotation.z += (tx - u.head.rotation.z)*Math.min(1,dt*7);
+      for (var e=0;e<u.ears.length;e++) u.ears[e].rotation.y = -u.head.rotation.y*0.35;
+
+      // the tail carries motion down its length
+      for (var s=0;s<u.tail.length;s++){
+        var w=0.35+s*0.16;
+        u.tail[s].rotation.z = (s===0?-0.30:0) + 0.10*Math.sin(t*3.4 - s*0.55)*w;
+        u.tail[s].rotation.x = 0.07*Math.sin(t*2.3 - s*0.40)*w;
+      }
+
+      // blink, with an occasional double
       u.blink-=dt;
-      if (u.blink<0){ u.blink=2.5+Math.random()*4.5; }
-      var sq = (u.blink<0.12) ? 0.15 : 1;
-      u.eyes[0].scale.y=u.eyes[1].scale.y=sq;
-      if (u.hop>0){
-        u.hop=Math.max(0,u.hop-dt*2.2);
-        c.position.y += Math.sin((1-u.hop)*Math.PI)*26;
-        c.scale.y = c.scale.x*(1+Math.sin((1-u.hop)*Math.PI)*.12);
-      } else c.scale.y=c.scale.x;
+      if (u.blink<-0.16){ u.blink = 2.6+Math.random()*4.5; }
+      var lid = (u.blink<0 && u.blink>-0.14) ? Math.max(0.08,1-Math.sin(Math.PI*(-u.blink)/0.14)) : 1;
+      u.eyes[0].scale.y=u.eyes[1].scale.y=lid;
+
+      // tap: squash, ears flatten, a hop
+      if (u.tapT<0.9){
+        u.tapT+=dt;
+        var ex=Math.exp(-6*u.tapT), osc=Math.cos(20*u.tapT);
+        u.spine.scale.set(1+0.16*ex*osc, breathe*(1-0.20*ex*osc), 1+0.16*ex*osc);
+        for (var e2=0;e2<u.ears.length;e2++) u.ears[e2].rotation.z = -0.12 + 0.7*ex;
+        c.position.y = u.baseY + 8*Math.sin(Math.PI*Math.min(1,u.tapT/0.35))*ex;
+      } else {
+        c.position.y = u.baseY;
+        for (var e3=0;e3<u.ears.length;e3++)
+          u.ears[e3].rotation.z += (-0.12 - u.ears[e3].rotation.z)*k1;
+      }
     }
   }
 
@@ -1994,7 +2252,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   }
   function pokeCat(i){
     var c=cats[i], u=c.userData;
-    u.hop=1; u.target=null; u.pause=1.4;
+    u.tapT=0; u.target=null; u.pause=1.4;
     AUD.sfx("hover"); AUD.sfx("found");
     var says=u.kind.says;
     catSay(c, says[Math.floor(Math.random()*says.length)]);
@@ -2364,6 +2622,18 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     try{ localStorage.setItem("tofu.cats", catOn?"1":"0"); }catch(e){}
     if (catBubble) catBubble.classList.remove("on");
     paintCats(); AUD.sfx("swap");
+  });
+  document.getElementById("vwipe").addEventListener("click",function(){
+    // Wipe every stored key, then reload. A reload is the only way to be certain
+    // nothing in memory survives - patching each module by hand missed things.
+    try{
+      for (var i=localStorage.length-1;i>=0;i--){
+        var k=localStorage.key(i);
+        if (k && k.indexOf("tofu")===0) localStorage.removeItem(k);
+      }
+    }catch(e){}
+    AUD.sfx("swap");
+    setTimeout(function(){ location.reload(); }, 220);
   });
   paintCats();
   document.addEventListener("click",function(e){
