@@ -868,9 +868,9 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       tail:"November. The first one gets crossed off." },
     { key:"cup", label:"Cold coffee",
       title:"Cold coffee, and then cake anyway.",
-      body:["Cold coffee is non-negotiable. Hot chocolate when the day has been a lot. Biscoff cheesecake is the correct cheesecake and this is not up for debate.",
+      body:["Cold coffee is non-negotiable. Hot chocolate when the day has been a lot. Cake is ordered at eleven at night and no permission is sought.",
             "A full day&rsquo;s food gets listed out, a calorie total is requested, and then a chocolate cake is ordered at eleven at night. Both decisions were right."],
-      chips:["cold coffee","hot chocolate","biscoff","cake at 11pm"],
+      chips:["cold coffee","hot chocolate","chocolate cake","cake at 11pm"],
       tail:"Eat the cake." },
     { key:"gym", label:"Leg day",
       title:"Leg day is the favourite. Voluntarily.",
@@ -905,8 +905,8 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     { id:"where", q:"Where next?", opts:["Spiti","Jibhi","Tirthan","Kasol","Manali","Shangarh",
         "Shoja","Bir Billing","Kalpa","Sissu","Leh","Munnar","Sarpass","Kheerganga",
         "Chitkul","Tosh","Kasauli","Mcleodganj","Valley of Flowers","Rishikesh"] },
-    { id:"eat", q:"What to eat?", opts:["Cold coffee","Biscoff cheesecake","Chocolate cake",
-        "Lucknawi biryani","Paneer bhurji","Hot chocolate","Rasmalai","Momos",
+    { id:"eat", q:"What to eat?", opts:["Cold coffee","Chocolate cake","Biryani","Paneer bhurji",
+        "Hot chocolate","Rasmalai","Momos",
         "Dal, aloo, kheera","Dosa","Muesli and milk","Three eggs","Kheer","Aloo paratha",
         "Dark chocolate, 55%","Coconut water","Maggi, obviously","A whole watermelon",
         "Chole bhature","Something with paneer in it"] },
@@ -924,7 +924,6 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
 
   /* ══════ scene 3 data: receipts ════════════════════════ */
   var RCPT = [
-    { t:"Said no", b:"October 2024. Turned the Mu Sigma offer down and waited for something better instead of taking the first thing that arrived. Most people don't." },
     { t:"The bank", b:"Landed it, moved cities for it, and got through probation while complaining about it exactly the right amount." },
     { t:"Started", b:"18 August 2026. Announced the gym once, then simply kept going. No countdown, no relaunch, no second announcement." },
     { t:"The wish", b:"Two clean pull-ups and twenty push-ups. Not a present, not a holiday &mdash; a requirement, set for yourself, out loud." },
@@ -987,18 +986,27 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     { q:"Which day at the gym is the favourite?",
       a:["Push day","Pull day","Leg day","Rest day"], c:2,
       note:"Leg day, voluntarily, which remains an unusual thing to enjoy out loud." },
+    { q:"Which superhero do you actually love?",
+      a:["Batman","Spider-Man","Iron Man","None of them"], c:1,
+      note:"\u201cI love spiderman\u201d \u2014 said flatly, on the second of August, and you had already planned to go and see it." },
+    { q:"Which board did you sit?",
+      a:["CBSE","ICSE","State board","IB"], c:1,
+      note:"\u201cICSE Board toh mera bhi tha.\u201d It turned out we had that in common too." },
+    { q:"Why is Diwali non-negotiable for you?",
+      a:["The sweets","It is your mother\u2019s birthday","The lights","The holiday"], c:1,
+      note:"\u201cdiwali wale din mmy ka bday hai that I can\u2019t miss.\u201d Nothing gets scheduled over it." },
+    { q:"What went into the shopping cart and never came out?",
+      a:["Running shoes","An orange cat and a shih tzu","A pullover","A scrunchie"], c:1,
+      note:"\u201cEk orange billi aor ek shitzu bhi cart mein add krdo phir.\u201d Both still in there." },
+    { q:"Finish it: \u201cduniya itni badi aor sundar hai, kaash\u2026\u201d",
+      a:["\u2026we had more money","\u2026ye job vob nhi hoti","\u2026it were closer","\u2026we had more time"], c:1,
+      note:"You wished the jobs simply did not exist so the two of us could go and experience it. Nobody has improved on that since." },
     { q:"What is on the training list after clean push-ups?",
       a:["A 360 kick","A marathon","Rope climbing","Nothing"], c:0,
       note:"A 360 kick, then muay thai, written down as though it were an ordinary Tuesday." },
     { q:"How many steps a day is the floor, not the target?",
       a:["4,000","6,000","Ten thousand","Twenty thousand"], c:2,
       note:"Ten thousand \u2014 cleared on the days it was inconvenient, which is the only measurement that counts." },
-    { q:"What did you turn down in October 2024?",
-      a:["A promotion","The Mu Sigma offer","A trip","A flatshare"], c:1,
-      note:"Turned it down and waited for something better. Most people take whatever arrives first." },
-    { q:"Which cheesecake is the correct cheesecake?",
-      a:["New York","Blueberry","Biscoff","Matcha"], c:2,
-      note:"Biscoff, and this was never up for debate." },
     { q:"What are you going back to study?",
       a:["Design","Finance","AI and ML","Literature"], c:2,
       note:"Filed under \u201cprobably\u201d, which is how everything fully intended gets filed." },
@@ -1709,7 +1717,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     "You apologise for spamming and then keep going. Please keep going.",
     "You said the world is too big and beautiful for jobs to exist. You put it between a calorie count and a complaint about your manager.",
     "The birthday wish was two pull-ups and twenty push-ups. Not a present. A requirement.",
-    "You turned down the first offer and waited for a better one. Most people take whatever arrives.",
+    "Diwali is not moveable, because it is your mother’s birthday. Nothing gets scheduled over that and nothing ever should.",
     "Your feed worked it out before either of us did. Four thousand two hundred and fifty-five videos.",
     "Masters in AI and ML, abroad, filed under &ldquo;probably&rdquo; &mdash; which is how you file everything you fully intend to do.",
     "You only ever shout about places you have not been yet. Thirty-three times, almost always a mountain.",
@@ -1720,6 +1728,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     "There is an orange cat and a shih tzu sitting in a shopping cart somewhere, waiting.",
     "You went in nervous for the bloodwork and came out with results worth being pleased about, and you said so.",
     "Twelve valleys, one list, nothing crossed off yet. That part changes in November.",
+    "ICSE, same as me. You found that out at three minutes past eleven at night and seemed pleased about it.",
     "You say <em>achhaa</em> when you are only half listening and <em>ARREEEE</em> when I have said something stupid. Two entirely different words, spelled almost the same.",
     "Nobody has ever asked me for a calorie total with more confidence and then ignored it more completely.",
     "You once wished there were no jobs so the world could just be experienced. You were right and nobody has improved on it since.",
@@ -1735,7 +1744,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     "You are the only person who has ever told me to drink water and meant it as a whole argument.",
     "Cold coffee in the afternoon, hot chocolate when the day has been heavy. You have a drink for every mood and no mood you cannot name.",
     "You kept the receipt for none of it and remembered all of it anyway.",
-    "Somebody should tell you that turning down the first offer and waiting was the bravest thing on the list.",
+    "“I love spiderman,” you said, entirely deadpan, having already decided we were going to see it.",
     "You have never once used the crying face for crying. Only for laughing until you cannot breathe.",
     "Your goodnights have an otter in them. Mine have a clover. Neither of us has ever explained ourselves.",
     "You wrote a whole itinerary at 12:13 in the morning and then said you only ever get as far as thinking about it. Both things were true.",
@@ -2136,13 +2145,11 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   /* ══════ her turn: saved locally, sent on demand ════════
      Static hosting has no server to post to, so answers live in her
      browser and she chooses when to send them. Nothing leaves silently. */
-  var SEND_TO = {
-    whatsapp: "",                      // digits with country code, no + or spaces
-    email: "sujaldua28@gmail.com",
-    // FormSubmit relays a plain POST to that address - no account, no key.
-    // If it ever fails we fall back to opening her mail app instead.
-    post: "https://formsubmit.co/ajax/sujaldua28@gmail.com"
-  };
+  // Delivery goes to a private ntfy topic - a plain text POST, no account,
+  // no key, no mail client. He subscribes to the same topic to receive it.
+  // Deliberately a "simple request" (text/plain, no custom headers) so the
+  // browser never needs a CORS preflight.
+  var NTFY = "https://ntfy.sh/rasmalai-tofu-7f3a2c9b";
   var PKEY="tofu.hers.v1";
   var pf=[document.getElementById("f1"),document.getElementById("f2"),
           document.getElementById("f3"),document.getElementById("f4")];
@@ -2178,44 +2185,29 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   }
   function pFlyEnvelope(){ envFly=1; AUD.sfx("open"); }
 
-  function mailFallback(body){
-    window.location.href = "mailto:"+SEND_TO.email
-      +"?subject="+encodeURIComponent("From the small world")
-      +"&body="+encodeURIComponent(body);
-    pHint.textContent="Opening your mail app instead \u2014 press send there.";
-  }
   document.getElementById("pSend").addEventListener("click",function(){
     var body=pText();
     if (!body){ pHint.textContent="Write something first, even one word."; return; }
     pFlyEnvelope();
-    var btn=this;
-    if (SEND_TO.post && window.fetch){
-      btn.disabled=true; pHint.textContent="Sending\u2026";
-      var payload={ _subject:"From the small world", message:body };
-      for (var i=0;i<pf.length;i++) if (pf[i] && pf[i].value.trim()) payload[pQs[i]]=pf[i].value.trim();
-      var done=false;
-      var finish=function(ok){
-        if (done) return; done=true; btn.disabled=false;
-        if (ok){
-          pHint.textContent="Sent. It is already with him \u2014 you do not have to do anything else.";
-          AUD.sfx("found");
-        } else mailFallback(body);
-      };
-      setTimeout(function(){ finish(false); }, 9000);     // never leave her waiting
-      fetch(SEND_TO.post,{
-        method:"POST",
-        headers:{ "Content-Type":"application/json", "Accept":"application/json" },
-        body:JSON.stringify(payload)
-      }).then(function(r){ return r.ok ? r.json().catch(function(){return {};}) : null; })
-        .then(function(j){ finish(!!j); })
-        .catch(function(){ finish(false); });
-      return;
-    }
-    if (SEND_TO.whatsapp){
-      window.open("https://wa.me/"+SEND_TO.whatsapp+"?text="+encodeURIComponent(body),"_blank");
-      pHint.textContent="WhatsApp should be opening with it typed out. Press send there.";
-    } else mailFallback(body);
+    var btn=this, done=false;
+    btn.disabled=true; pHint.textContent="Sending\u2026";
+    var finish=function(ok){
+      if (done) return; done=true; btn.disabled=false;
+      if (ok){
+        pHint.textContent="Sent. It is already with him \u2014 nothing else for you to do.";
+        AUD.sfx("found");
+      } else {
+        pHint.textContent="Could not reach him just now. It is saved here \u2014 press Copy and send it any way you like.";
+        AUD.sfx("lever");
+      }
+    };
+    setTimeout(function(){ finish(false); }, 9000);          // never leave her waiting
+    if (!window.fetch){ finish(false); return; }
+    fetch(NTFY,{ method:"POST", headers:{"Content-Type":"text/plain"}, body:body })
+      .then(function(r){ finish(r && r.ok); })
+      .catch(function(){ finish(false); });
   });
+
   document.getElementById("pCopy").addEventListener("click",function(){
     var body=pText();
     if (!body){ pHint.textContent="Nothing to copy yet."; return; }
