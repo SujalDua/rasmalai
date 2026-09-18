@@ -128,9 +128,12 @@
     text-transform:uppercase;color:rgba(253,252,247,.74);
     text-shadow:0 2px 12px rgba(20,16,44,.6)}
   .panel{position:fixed;left:50%;transform:translateX(-50%);bottom:74px;z-index:5;
+    box-shadow:0 22px 54px rgba(20,16,44,.46),0 1px 0 rgba(255,255,255,.7) inset;
     width:min(560px,calc(100% - 32px));
     background:rgba(253,252,247,.96);color:var(--ink);border-radius:18px;
-    padding:18px 20px;box-shadow:0 18px 44px rgba(20,16,44,.4)}
+    padding:18px 20px;overflow:hidden}
+  .panel::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+    background:linear-gradient(90deg,var(--coral),var(--butter),var(--mint2),var(--lilac))}
   .panel.hide,.hud.hide,.pips.hide{display:none}
   .modes{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0 0 14px}
   .modes button{font-family:var(--fd);font-weight:600;font-size:12px;border-radius:99px;
@@ -226,6 +229,8 @@
     transition:opacity .8s ease,visibility .8s}
   #intro.gone{opacity:0;visibility:hidden;pointer-events:none}
   #intro .b{max-width:32ch}
+  #intro .greet2{font-family:var(--fd);font-weight:500;font-size:13px;
+    color:rgba(253,252,247,.62);margin:-8px 0 18px;min-height:14px}
   #intro .greet{font-family:var(--fd);font-weight:600;font-size:12px;letter-spacing:.2em;
     text-transform:uppercase;color:var(--butter);margin:0 0 16px;min-height:16px}
   #intro h1{font-family:var(--fd);font-weight:300;font-size:clamp(2.6rem,9.5vw,4.4rem);
@@ -279,12 +284,31 @@
   #card .gal figure:first-child img{height:250px}
   #card .gal figcaption{font-size:12.5px;line-height:1.45;color:var(--ink2);
     padding:8px 3px 10px;margin:0}
+  #card .again{font-family:var(--fd);font-weight:600;font-size:15.5px;line-height:1.5;
+    color:var(--ink);background:rgba(255,217,142,.26);border-left:3px solid var(--butter);
+    border-radius:0 10px 10px 0;padding:12px 15px;margin:0 0 18px}
   #card .tail{margin-top:26px;padding-top:18px;border-top:1px solid rgba(30,27,58,.12);
     font-family:var(--fd);font-weight:600;font-size:14.5px;color:var(--mint2)}
   #card .chips{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;padding:0;list-style:none}
   #card .chips li{font-size:12.5px;font-weight:600;color:var(--ink2);
     background:rgba(143,217,196,.28);padding:5px 11px;border-radius:99px}
 
+  #bday{position:fixed;inset:0;z-index:29;display:grid;place-items:center;padding:24px;
+    opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s;overflow:hidden;
+    background:radial-gradient(70% 60% at 50% 50%,rgba(60,40,90,.74),rgba(24,20,58,.92));
+    backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+  #bday.on{opacity:1;visibility:visible}
+  #bday .hcard{position:relative;z-index:2}
+  #bday .ndate{font-family:var(--fd);font-weight:700;font-size:10.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--coral);margin:0 0 8px}
+  #bday .nbody{font-size:16.5px;line-height:1.7;color:var(--ink2);margin:14px 0 0}
+  #bday .big{display:block;font-family:var(--fd);font-weight:700;
+    font-size:clamp(2.2rem,8vw,3.4rem);line-height:1;letter-spacing:-.03em;
+    color:var(--ink);margin:0 0 10px}
+  #confetti{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  #confetti i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;
+    animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(104vh) rotate(720deg)}}
   #note{position:fixed;inset:0;z-index:29;display:grid;place-items:center;padding:24px;
     opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s;overflow-y:auto;
     background:radial-gradient(70% 60% at 50% 50%,rgba(36,31,82,.72),rgba(24,20,58,.9));
@@ -366,6 +390,7 @@
   <div class="tr">
     <div class="pips" id="pips" aria-hidden="true"></div>
     <span class="eq" id="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+    <button class="helpbtn" id="cake" type="button" aria-label="The third of February">&#127874;</button>
     <button class="helpbtn" id="daily" type="button" aria-label="Today&rsquo;s note">&#10022;</button>
     <button class="helpbtn" id="help" type="button" aria-label="How this works">?</button>
     <button class="snd" id="snd" type="button" aria-label="Sound settings">&#128266;</button>
@@ -442,6 +467,7 @@
 <div id="intro">
   <div class="b">
     <p class="greet" id="greet"></p>
+    <p class="greet2" id="greet2"></p>
     <h1>Five rooms,<br>one small <b>world</b>.</h1>
     <p>An island with six things on it, a machine that makes your decisions,
       a stack of receipts you did not ask for, a quiz you will probably lose, and a postbox so you can answer back.</p>
@@ -457,6 +483,16 @@
   <h2 id="cT">&mdash;</h2>
   <div id="cB"></div>
 </aside>
+
+<div id="bday" role="dialog" aria-modal="true" aria-labelledby="bdT">
+  <div class="hcard">
+    <p class="ndate" id="bdWhen"></p>
+    <h2 id="bdT">The third of February</h2>
+    <p class="nbody" id="bdBody"></p>
+    <button class="okbtn" id="bdOk" type="button">Close</button>
+  </div>
+  <div id="confetti" aria-hidden="true"></div>
+</div>
 
 <div id="note" role="dialog" aria-modal="true" aria-labelledby="ntT">
   <div class="hcard">
@@ -475,8 +511,9 @@
       <li><b>&#128070;</b><span><strong>Drag anywhere</strong> to turn the world around and see what is behind things.</span></li>
       <li><b>&#10022;</b><span><strong>Tap anything that lights up.</strong> Six things are hidden on the island. Find all six and it becomes next year.</span></li>
       <li><b>&#9776;</b><span><strong>Five rooms</strong> along the bottom &mdash; the island, a machine that makes your decisions, a printer, a quiz about you, and a postbox for writing back.</span></li>
-      <li><b>&larr;</b><span><strong>Back</strong> is top-left, and your phone&rsquo;s back gesture works too.</span></li>
+      <li><b>&larr;</b><span><strong>Back</strong> is top-left, your phone&rsquo;s back gesture works, and keys 1&ndash;5 jump between rooms.</span></li>
       <li><b>&#128266;</b><span><strong>Sound</strong> is the speaker, top-right. There is music.</span></li>
+      <li><b>&#127874;</b><span>The <strong>cake</strong>, top-right, counts down to the third of February.</span></li>
       <li><b>&#10022;</b><span>The <strong>star</strong>, top-right, gives you a different note every time you press it.</span></li>
       <li><b>&#9829;</b><span>It <strong>remembers</strong> what you have found, so you can leave and come back.</span></li>
     </ul>
@@ -801,7 +838,9 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         "Book the flight, actually","Stretch. Properly, not for four seconds.",
         "Text your mother back","Put the phone face down",
         "Add something to the cart and not buy it","Go for the walk anyway",
-        "Rewatch the Spiderman one","Write the list again"] }
+        "Rewatch the Spiderman one","Write the list again","Close the rings anyway",
+        "Ten minutes of nothing at all","Send the voice note, don't type it",
+        "Look up flights you won't book","Put the scrunchie in your hair for once"] }
   ];
   var mode = 0;
 
@@ -852,9 +891,42 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       a:["A good job and a quiet flat","Friends, family, animals, walking, eating, sleeping",
          "Travelling the whole world","Finishing the masters"], c:1,
       note:"Seven things, typed in about four seconds. No job title. Nothing you have to become first." },
+    { q:"Which day did we send the most messages?",
+      a:["A Sunday in June","19 August","1 January","The day we met"], c:1,
+      note:"Five hundred and forty in one day. Neither of us noticed at the time." },
+    { q:"What do you tell me to do more than anything else?",
+      a:["Eat something","Drink water and go to sleep","Book the flight","Stop sending reels"], c:1,
+      note:"pani pio pani. sojao ab dark circles aajyegee. Every night, without once being asked." },
     { q:"On the thirty-first of August you wrote, in capitals:",
       a:["I AM SO TIRED","WILL MAKE MYSELF PROUD","LET ME SLEEP","BOOK THE FLIGHT"], c:1,
-      note:"And then you went and did the work. That one is the receipt for all the others." }
+      note:"And then you went and did the work. That one is the receipt for all the others." },
+    { q:"What deadline did you set yourself for the third of February?",
+      a:["A new job","Abs","A trip booked","Finishing the masters"], c:1,
+      note:"3rd feb tk abs chahiye. Said on the twenty-fourth of August, entirely unprompted." },
+    { q:"Which drink is non-negotiable?",
+      a:["Masala chai","Cold coffee","Green tea","Nimbu paani"], c:1,
+      note:"Cold coffee. Hot chocolate only when the day has been heavy \u2014 there is a drink for every mood." },
+    { q:"Which day at the gym is the favourite?",
+      a:["Push day","Pull day","Leg day","Rest day"], c:2,
+      note:"Leg day, voluntarily, which remains an unusual thing to enjoy out loud." },
+    { q:"What is on the training list after clean push-ups?",
+      a:["A 360 kick","A marathon","Rope climbing","Nothing"], c:0,
+      note:"A 360 kick, then muay thai, written down as though it were an ordinary Tuesday." },
+    { q:"How many steps a day is the floor, not the target?",
+      a:["4,000","6,000","Ten thousand","Twenty thousand"], c:2,
+      note:"Ten thousand \u2014 cleared on the days it was inconvenient, which is the only measurement that counts." },
+    { q:"What did you turn down in October 2024?",
+      a:["A promotion","The Mu Sigma offer","A trip","A flatshare"], c:1,
+      note:"Turned it down and waited for something better. Most people take whatever arrives first." },
+    { q:"Which cheesecake is the correct cheesecake?",
+      a:["New York","Blueberry","Biscoff","Matcha"], c:2,
+      note:"Biscoff, and this was never up for debate." },
+    { q:"What are you going back to study?",
+      a:["Design","Finance","AI and ML","Literature"], c:2,
+      note:"Filed under \u201cprobably\u201d, which is how everything fully intended gets filed." },
+    { q:"Which animal turns up in your goodnights?",
+      a:["A cat","An otter","A penguin","A bear"], c:1,
+      note:"An otter. You have never explained it and I hope you never do." }
   ];
   var qOrder=[], qAt=0, qScore=0, qPicked=-1, qDone=false;
 
@@ -873,7 +945,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
               catch(e){ hasGL=false; } }
 
   var scene, cam, lamp, island, objs=[], snow=null, clouds=null, ray, ptr=new THREE.Vector2(-9,-9);
-  var S1,S2,S3,S4,S5, postbox=null, envelope=null, orb=null, stars=null, wheel=null, lever=null, printer=null, slips=[];
+  var S1,S2,S3,S4,S5, flies=null, postbox=null, envelope=null, orb=null, stars=null, wheel=null, lever=null, printer=null, slips=[];
   var yaw=Math.random()*6.2832, vYaw=0, drag=false, moved=0, lastX=0, hov=-1;
   var CAMD=17.8, cur=0;
 
@@ -902,6 +974,20 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     var t=new THREE.CanvasTexture(c); t.anisotropy=4;
     if (THREE.SRGBColorSpace) t.colorSpace=THREE.SRGBColorSpace;
     return t;
+  }
+  // soft additive disc behind bright things, for a bloom feel
+  function glowDisc(size,color,opacity){
+    var c=document.createElement("canvas"); c.width=c.height=128;
+    var x=c.getContext("2d");
+    var g=x.createRadialGradient(64,64,0,64,64,64);
+    g.addColorStop(0,"rgba(255,255,255,1)");
+    g.addColorStop(.35,"rgba(255,255,255,.45)");
+    g.addColorStop(1,"rgba(255,255,255,0)");
+    x.fillStyle=g; x.fillRect(0,0,128,128);
+    var t=new THREE.CanvasTexture(c);
+    var s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,color:color,
+      transparent:true,opacity:opacity,depthWrite:false,blending:THREE.AdditiveBlending}));
+    s.scale.setScalar(size); return s;
   }
   function shade(g){ g.traverse(function(o){ if(o.isMesh){o.castShadow=true;o.receiveShadow=true;} }); return g; }
 
@@ -1200,7 +1286,35 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       orb.add(mm);
     }
     orb.userData={moons:orb.children.slice(4)};
+    orb.add(glowDisc(9.5,0xFFD98E,.5));
     S4.add(orb); S4.position.y=1.2; S4.visible=false; scene.add(S4);
+
+    // fireflies drifting over the island
+    var fn=90, fpos=new Float32Array(fn*3), fph=new Float32Array(fn);
+    for (var fi=0;fi<fn;fi++){
+      var fa=Math.random()*6.2832, fr=Math.random()*5.2;
+      fpos[fi*3]=Math.cos(fa)*fr; fpos[fi*3+1]=.4+Math.random()*3.2; fpos[fi*3+2]=Math.sin(fa)*fr;
+      fph[fi]=Math.random()*6.2832;
+    }
+    var fg=new THREE.BufferGeometry();
+    fg.setAttribute("position",new THREE.BufferAttribute(fpos,3));
+    fg.setAttribute("aPh",new THREE.BufferAttribute(fph,1));
+    flies=new THREE.Points(fg,new THREE.ShaderMaterial({
+      uniforms:{uT:{value:0},uC:{value:new THREE.Color(0xFFE9A8)}},
+      transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+      vertexShader:["attribute float aPh; uniform float uT; varying float vA;",
+        "void main(){ vec3 p=position;",
+        "  p.x+=sin(uT*.35+aPh)*.7; p.y+=cos(uT*.28+aPh*1.4)*.45; p.z+=cos(uT*.31+aPh)*.7;",
+        "  vec4 mv=modelViewMatrix*vec4(p,1.0); gl_Position=projectionMatrix*mv;",
+        "  vA=pow(max(0.0,sin(uT*1.6+aPh*3.0)),3.0);",
+        "  gl_PointSize=(3.4+vA*3.0)*(110.0/max(-mv.z,1.0)); }"].join("\n"),
+      fragmentShader:["uniform vec3 uC; varying float vA;",
+        "void main(){ vec2 c=gl_PointCoord-.5; float d=length(c);",
+        "  if(d>.5||vA<=.01) discard;",
+        "  gl_FragColor=vec4(uC,pow(1.0-d*2.0,2.2)*vA); }"].join("\n")
+    }));
+    island.add(flies);
+
 
     /* -- scene 5: the postbox -- */
     S5=new THREE.Group();
@@ -1215,7 +1329,9 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     var pflagArm=cyl(.05,.05,.7,0xFDFCF7,8); pflagArm.position.set(1.12,2.5,0); postbox.add(pflagArm);
     var pflag=box(.5,.34,.05,0xFFD98E); pflag.position.set(1.36,2.78,0); postbox.add(pflag);
     postbox.userData={flag:pflag,arm:pflagArm};
-    shade(postbox); S5.add(postbox);
+    shade(postbox);
+    var pg=glowDisc(7.5,0xFF8E7F,.32); pg.position.y=2.2; postbox.add(pg);
+    S5.add(postbox);
     envelope=new THREE.Mesh(new THREE.PlaneGeometry(1.05,.72),
       new THREE.MeshBasicMaterial({color:0xFDFCF7,side:THREE.DoubleSide,transparent:true,opacity:0}));
     envelope.position.set(0,2.72,1.6); S5.add(envelope);
@@ -1249,6 +1365,8 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     cam.updateProjectionMatrix();
   }
   var D2=15.4, D3=13.2, D4=11.5, D5=11, envFly=0, flagUp=0;
+  var camWant=new THREE.Vector3(), lookWant=new THREE.Vector3(),
+      lookNow=new THREE.Vector3(), camReady=false;
   addEventListener("resize",resize);
 
   /* ══════ scene switching ═══════════════════════════════ */
@@ -1357,6 +1475,12 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     cN.textContent = ST.got[i]?"Found again":"One of six";
     cT.innerHTML=d.title;
     var h="";
+    // a fresh aside on every return visit
+    if (ST.got[i] && AGAIN[d.key] && AGAIN[d.key].length){
+      var pool=AGAIN[d.key];
+      var pick=pool[Math.floor(Math.random()*pool.length)];
+      h+='<p class="again">'+pick+"</p>";
+    }
     if (d.lead) h+='<p class="lead">'+d.lead+"</p>";
     if (d.pic) h+='<figure class="pic" style="--op:'+d.pic.op+'"><img src="'+d.pic.src+'" alt=""></figure>';
     if (d.gallery){
@@ -1388,6 +1512,14 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   document.getElementById("cX").addEventListener("click",shut);
   document.getElementById("cBack").addEventListener("click",shut);
   addEventListener("keydown",function(e){
+    // 1-5 jump between rooms, when not typing in her postbox
+    var tag=(e.target&&e.target.tagName||"").toLowerCase();
+    if (tag!=="input" && tag!=="textarea" && /^[1-5]$/.test(e.key)){
+      var want=parseInt(e.key,10)-1;
+      if (!card.classList.contains("on") && !howto.classList.contains("on")
+          && !noteEl.classList.contains("on")) { goScene(want); return; }
+    }
+    if (e.key==="Escape" && bdayEl.classList.contains("on")){ hideBday(); return; }
     if (e.key==="Escape" && noteEl.classList.contains("on")){ hideNote(); return; }
     if (e.key==="Escape" && howto.classList.contains("on")){ hideHow(); return; }
     if (e.key!=="Escape") return;
@@ -1518,7 +1650,21 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     "You are the only person who has ever told me to drink water and meant it as a whole argument.",
     "Cold coffee in the afternoon, hot chocolate when the day has been heavy. You have a drink for every mood and no mood you cannot name.",
     "You kept the receipt for none of it and remembered all of it anyway.",
-    "Somebody should tell you that turning down the first offer and waiting was the bravest thing on the list."
+    "Somebody should tell you that turning down the first offer and waiting was the bravest thing on the list.",
+    "You have never once used the crying face for crying. Only for laughing until you cannot breathe.",
+    "Your goodnights have an otter in them. Mine have a clover. Neither of us has ever explained ourselves.",
+    "You wrote a whole itinerary at 12:13 in the morning and then said you only ever get as far as thinking about it. Both things were true.",
+    "There is a t-shirt in your wardrobe that says ROAD TRIP WARRIOR. You own the shirt and not yet the road trip.",
+    "You ask for a calorie total the way other people ask for the time, and then you ignore it with total confidence.",
+    "The scrunchie lives on your wrist. It has never once been in your hair.",
+    "You are the only person who has told me to drink water as though it settled an argument.",
+    "Somewhere there is a shopping cart with an orange cat and a shih tzu in it, waiting to be bought.",
+    "You said you are very indecisive and then named twelve valleys in order of preference.",
+    "You call yourself a clown and let nobody else do it. Correct policy.",
+    "When something excites you the caps lock goes on and the punctuation goes out of the window entirely.",
+    "You once told your manager \u201cmummy\u201d by accident and recovered faster than anybody has ever recovered from anything.",
+    "Two pull-ups and twenty push-ups. A birthday wish you set yourself, out loud, where it could be checked.",
+    "You went in nervous for the bloodwork and came out pleased, and told somebody, which is the harder part."
   ];
   var noteEl=document.getElementById("note");
   // a shuffled bag: every note comes up once before any repeats, and the
@@ -1587,6 +1733,91 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   document.getElementById("resetReceipts").addEventListener("click",resetReceipts);
   document.getElementById("resetDecider").addEventListener("click",resetDecider);
 
+  /* ══════ extra lines for a second look ════════════════
+     Reopening a found object shows one of these instead of nothing new. */
+  var AGAIN = {
+    cat:["Still no cat. Still has a name. That is the correct amount of planning.",
+         "The shih tzu is also still in the cart, unpurchased, waiting.",
+         "Tofu is going to sleep exactly where you do not want her to.",
+         "You will pretend the gym in the flat was a practical decision."],
+    mtn:["The list got longer again last week. It always does.",
+         "Nothing crossed off. Yet. That word is doing a lot of work.",
+         "You will argue about the bus. I have budgeted for that.",
+         "Twelve valleys, and you still open the maps app at one in the morning."],
+    cup:["Cold coffee. Not a debate, an announcement.",
+         "The calorie total was requested and then comprehensively ignored.",
+         "Somewhere there is a cake you have not ordered yet. Fix that.",
+         "Hot chocolate means the day was heavy. I have learnt to read it."],
+    gym:["Leg day. Voluntarily. Still unusual. Still impressive.",
+         "Two pull-ups and twenty push-ups, set as a birthday wish by an actual adult.",
+         "The 360 kick remains on the list, entirely unexplained.",
+         "The rings get closed on the days it is inconvenient. That is the whole trick."],
+    plane:["Filed under probably, which everyone involved reads as decided.",
+           "Two years of being a student again, and travel in every gap.",
+           "Send photographs of a city nobody can pronounce. I will learn it.",
+           "The nazar emojis do not make it less true."],
+    mirror:["The mirror has not changed its opinion. It is still outvoted.",
+            "Five photographs. You sent every one of them yourself.",
+            "Butterflies, wings, the whole argument. It has not stopped being true.",
+            "Wear the saree. This is the fourth time of asking."]
+  };
+
+  /* ══════ the third of February ═════════════════════════
+     She gave the date on 17 August 2026 at 9:33 pm: "3rd feb, 2003". */
+  var BD_MONTH=1, BD_DAY=3;            // February is month 1
+  var bdayEl=document.getElementById("bday");
+  function bdayDays(){
+    var now=new Date(), t=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    var b=new Date(now.getFullYear(),BD_MONTH,BD_DAY);
+    if (b<t) b=new Date(now.getFullYear()+1,BD_MONTH,BD_DAY);
+    return Math.round((b-t)/86400000);
+  }
+  function isBirthday(){
+    var n=new Date(); return n.getMonth()===BD_MONTH && n.getDate()===BD_DAY;
+  }
+  function confetti(){
+    var box=document.getElementById("confetti");
+    if (!box) return;
+    box.innerHTML="";
+    var cols=["#FF8E7F","#FFD98E","#8FD9C4","#B9A6E8","#FDFCF7"];
+    for (var i=0;i<70;i++){
+      var s=document.createElement("i");
+      s.style.left=(Math.random()*100)+"%";
+      s.style.background=cols[i%cols.length];
+      s.style.animationDuration=(2.6+Math.random()*2.6)+"s";
+      s.style.animationDelay=(Math.random()*2.2)+"s";
+      s.style.opacity=String(.55+Math.random()*.45);
+      box.appendChild(s);
+    }
+  }
+  function showBday(){
+    var d=bdayDays(), when=document.getElementById("bdWhen"),
+        body=document.getElementById("bdBody");
+    if (isBirthday()){
+      when.textContent="today";
+      body.innerHTML='<span class="big">Happy birthday.</span>'
+        +"You handed over the date on a Monday morning in August without being asked twice "
+        +"&mdash; <em>3rd feb, 2003</em> &mdash; and a week later set yourself a deadline to go with it. "
+        +"Whether the abs arrived is between you and the mirror, and the mirror has already been outvoted once."
+        +"<br><br>Twenty-four. Eat the cake, take the day, and let somebody else do the deciding for once.";
+      confetti(); AUD.sfx("chime");
+    } else {
+      when.textContent = d===1 ? "tomorrow" : d+" days away";
+      body.innerHTML='<span class="big">'+d+(d===1?" day":" days")+"</span>"
+        +"until the third of February, which you gave me at half past nine at night on the "
+        +"seventeenth of August, without hesitating.<br><br>"
+        +"A week after that you set the deadline yourself: <em>3rd feb tk abs chahiye</em>. "
+        +"It is in the calendar. So is the cake, which is non-negotiable and not up for discussion.";
+      AUD.sfx("open");
+    }
+    bdayEl.classList.add("on");
+    document.getElementById("bdOk").focus();
+  }
+  function hideBday(){ bdayEl.classList.remove("on"); }
+  document.getElementById("cake").addEventListener("click",showBday);
+  document.getElementById("bdOk").addEventListener("click",hideBday);
+  bdayEl.addEventListener("click",function(e){ if(e.target===bdayEl) hideBday(); });
+
   /* ══════ the quiz ══════════════════════════════════════ */
   var qProg=document.getElementById("qProg"), qQ=document.getElementById("qQ"),
       qOpts=document.getElementById("qOpts"), qNote=document.getElementById("qNote"),
@@ -1597,15 +1828,16 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     for (var j=a.length-1;j>0;j--){ var k=Math.floor(Math.random()*(j+1)),t=a[j];a[j]=a[k];a[k]=t; }
     return a;
   }
+  var ROUND=10;                       // a round of 10, drawn from a bigger pool
   function quizStart(){
-    qOrder=shuffled(QUIZ.length); qAt=0; qScore=0; qDone=false;
+    qOrder=shuffled(QUIZ.length).slice(0,ROUND); qAt=0; qScore=0; qDone=false;
     drawQ();
   }
   function drawQ(){
     qPicked=-1; qNote.classList.remove("on"); qNote.innerHTML="";
-    qNext.disabled=true; qNext.textContent = qAt===QUIZ.length-1 ? "See the score" : "Next";
+    qNext.disabled=true; qNext.textContent = qAt===ROUND-1 ? "See the score" : "Next";
     var item=QUIZ[qOrder[qAt]];
-    qProg.textContent="Question "+(qAt+1)+" of "+QUIZ.length;
+    qProg.textContent="Question "+(qAt+1)+" of "+ROUND;
     qQ.innerHTML=item.q;
     qOpts.innerHTML="";
     // the options get shuffled too, so the position of the answer is never a clue
@@ -1641,7 +1873,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     best=Math.max(best,qScore);
     try{ localStorage.setItem("tofu.best",String(best)); }catch(e){}
     var msg;
-    if (qScore===QUIZ.length)
+    if (qScore===ROUND)
       msg="Every single one. Of course. The quiz was never the point \u2014 the point is that somebody else knows them too.";
     else if (qScore>=7)
       msg="Most of them. The ones you missed are the ones you would never think to notice about yourself, which is exactly why somebody else has to.";
@@ -1650,7 +1882,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     else
       msg="Not many. I got all ten, which is either very sweet or slightly alarming, and I am comfortable either way.";
     qProg.textContent="Finished";
-    qQ.innerHTML='<span class="qscore">'+qScore+" out of "+QUIZ.length+"</span>";
+    qQ.innerHTML='<span class="qscore">'+qScore+" out of "+ROUND+"</span>";
     qOpts.innerHTML="";
     qNote.innerHTML=msg+(best>qScore?"<br><br>Your best so far is "+best+".":"");
     qNote.classList.add("on");
@@ -1659,7 +1891,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   }
   qNext.addEventListener("click",function(){
     if (qDone){ quizStart(); return; }
-    if (qAt>=QUIZ.length-1){ quizEnd(); return; }
+    if (qAt>=ROUND-1){ quizEnd(); return; }
     qAt++; drawQ(); AUD.sfx("swap");
   });
   document.getElementById("resetQuiz").addEventListener("click",function(){
@@ -1673,7 +1905,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
      browser and she chooses when to send them. Nothing leaves silently. */
   var SEND_TO = {
     whatsapp: "",                      // digits with country code, no + or spaces
-    email: "sujdua@cisco.com"
+    email: "sujaldua28@gmail.com"
   };
   var PKEY="tofu.hers.v1";
   var pf=[document.getElementById("f1"),document.getElementById("f2"),
@@ -1775,6 +2007,20 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     else if (hr<23) s="Late. Twenty more minutes of reels, then.";
     else            s="Nearly midnight. Right on schedule.";
     var el=document.getElementById("greet"); if (el) el.textContent=s;
+    // it keeps count of her coming back
+    var v=1;
+    try{
+      v=(parseInt(localStorage.getItem("tofu.visits")||"0",10)||0)+1;
+      localStorage.setItem("tofu.visits",String(v));
+    }catch(e){}
+    var back="";
+    if (v===2)       back="Back again. Good.";
+    else if (v===3)  back="Third time.";
+    else if (v===5)  back="Five visits. Somebody likes it here.";
+    else if (v===10) back="Ten. Yes, I am counting.";
+    else if (v===25) back="Twenty-five. At this point it is your house.";
+    else if (v>3)    back="Visit "+v+".";
+    var e2=document.getElementById("greet2"); if (e2) e2.textContent=back;
   })();
 
   // instructions - shown once on the first visit, and on the ? button
@@ -1785,7 +2031,8 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     document.getElementById("intro").classList.add("gone");
     var seen=false;
     try{ seen = localStorage.getItem("tofu.how")==="1"; }catch(e){}
-    if (!seen){ setTimeout(showHow,700); try{ localStorage.setItem("tofu.how","1"); }catch(e){} }
+    if (isBirthday()) setTimeout(showBday,700);
+    else if (!seen){ setTimeout(showHow,700); try{ localStorage.setItem("tofu.how","1"); }catch(e){} }
   }
   document.getElementById("help").addEventListener("click",showHow);
   document.getElementById("hcOk").addEventListener("click",hideHow);
@@ -1869,6 +2116,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         u.s+=(u.tgt-u.s)*.13;
         o.scale.setScalar(u.s*(u.fit||1));
       }
+      if (flies) flies.material.uniforms.uT.value=t;
       for (var c3=0;c3<clouds.children.length;c3++){
         var cc=clouds.children[c3];
         cc.position.x+=cc.userData.sp*.016;
@@ -1883,7 +2131,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         snow.geometry.attributes.position.needsUpdate=true;
       }
       stepBursts(dt);
-      cam.position.set(0,CAMD*.46,CAMD); cam.lookAt(0,.2,0);
+      camWant.set(0,CAMD*.46,CAMD); lookWant.set(0,.2,0);
 
     } else if (cur===1){
       if (wheelTarget!==null){
@@ -1912,7 +2160,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         lever.userData.pull += (0-lever.userData.pull)*.06;
         lever.rotation.z = -lever.userData.pull*.6;
       }
-      cam.position.set(0,2.6,D2); cam.lookAt(0,1.35,0);
+      camWant.set(0,2.6,D2); lookWant.set(0,1.35,0);
 
     } else if (cur===4){
       if (postbox){
@@ -1931,7 +2179,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         envelope.scale.setScalar(1+e1*.4);
       } else if (envelope) envelope.material.opacity=0;
       flagUp += ((envFly>0?1:0) - flagUp)*.06;
-      cam.position.set(0,3.4,D5); cam.lookAt(0,1.9,0);
+      camWant.set(0,3.4,D5); lookWant.set(0,1.9,0);
 
     } else if (cur===3){
       if (orb){
@@ -1948,7 +2196,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         var pulse = 1 + Math.sin(t*1.5)*.03;
         orb.children[0].scale.setScalar(pulse);
       }
-      cam.position.set(0,2.2,D4); cam.lookAt(0,1.1,0);
+      camWant.set(0,2.2,D4); lookWant.set(0,1.1,0);
 
     } else {
       for (var k2=0;k2<slips.length;k2++){
@@ -1981,7 +2229,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         sl.renderOrder = off===0 ? 10 : (5-Math.min(a2,4));
       }
       if (printer) printer.rotation.y = Math.sin(t*.16)*.28;
-      cam.position.set(0,5.6,D3); cam.lookAt(0,2.75,0);
+      camWant.set(0,5.6,D3); lookWant.set(0,2.75,0);
     }
 
     // hover only matters on the island
@@ -2002,6 +2250,15 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         tag.style.top=((-pp.y*.5+.5)*innerHeight)+"px";
       }
     } else if (cur!==0){ cv.style.cursor="pointer"; }
+
+    // glide between rooms instead of cutting - framerate independent
+    if (!camReady){ cam.position.copy(camWant); lookNow.copy(lookWant); camReady=true; }
+    else {
+      var k=1-Math.pow(0.0015,dt);
+      cam.position.lerp(camWant,k);
+      lookNow.lerp(lookWant,k);
+    }
+    cam.lookAt(lookNow);
 
     R.render(scene,cam);
   }
