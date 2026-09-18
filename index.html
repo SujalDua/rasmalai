@@ -459,19 +459,25 @@
 
 <div class="panel hide" id="hud5">
   <p class="qprog">Your turn</p>
-  <p class="pintro">Four questions I do not get to answer. It saves as you type, and sending it goes straight to him.</p>
+  <p class="pintro">Six questions I do not get to answer. Every one of them comes from
+    something you said. It saves as you type, and sending it goes straight to him.</p>
   <label class="pf"><span>Where do we actually go first?</span>
-    <input id="f1" type="text" placeholder="Spiti, obviously" maxlength="60"></label>
-  <label class="pf"><span>Tofu&rsquo;s middle name</span>
-    <input id="f2" type="text" placeholder="go on" maxlength="40"></label>
-  <label class="pf"><span>One thing that has to be in the flat</span>
-    <input id="f3" type="text" placeholder="besides the gym" maxlength="60"></label>
+    <input id="f1" type="text" placeholder="Spiti, obviously" maxlength="70"></label>
+  <label class="pf"><span>First thing you say when you finally see me</span>
+    <input id="f2" type="text" placeholder="no pressure" maxlength="90"></label>
+  <label class="pf"><span>If you were a boy for one day</span>
+    <input id="f3" type="text" placeholder="you once said you&rsquo;d just go for a walk. still that?" maxlength="110"></label>
+  <label class="pf"><span>One song that has to be playing</span>
+    <input id="f4" type="text" placeholder="a day without one is not a complete day, apparently" maxlength="80"></label>
+  <label class="pf"><span>Something you have never told me</span>
+    <input id="f5" type="text" placeholder="your move" maxlength="140"></label>
   <label class="pf"><span>Anything you want to say back</span>
-    <textarea id="f4" rows="3" placeholder="no word limit, take your time" maxlength="600"></textarea></label>
+    <textarea id="f6" rows="3" placeholder="no word limit, take your time" maxlength="700"></textarea></label>
   <p class="psaved" id="pSaved">saved on this device</p>
   <div class="pbtns">
     <button class="qnext" id="pSend" type="button">Send it to Sujal</button>
     <button class="panelreset" id="pCopy" type="button" style="margin:0;width:auto;padding:11px 16px">Copy</button>
+    <button class="panelreset" id="pReset" type="button" style="margin:0;width:auto;padding:11px 16px">Clear it all</button>
   </div>
   <p class="phint" id="pHint"></p>
 </div>
@@ -2150,12 +2156,15 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   // Deliberately a "simple request" (text/plain, no custom headers) so the
   // browser never needs a CORS preflight.
   var NTFY = "https://ntfy.sh/rasmalai-tofu-7f3a2c9b";
-  var PKEY="tofu.hers.v1";
-  var pf=[document.getElementById("f1"),document.getElementById("f2"),
-          document.getElementById("f3"),document.getElementById("f4")];
+  var PKEY="tofu.hers.v2";
+  var pf=["f1","f2","f3","f4","f5","f6"].map(function(id){ return document.getElementById(id); });
   var pSaved=document.getElementById("pSaved"), pHint=document.getElementById("pHint");
-  var pQs=["Where do we actually go first?","Tofu's middle name",
-           "One thing that has to be in the flat","Anything you want to say back"];
+  var pQs=["Where do we actually go first?",
+           "First thing you say when you finally see me",
+           "If you were a boy for one day",
+           "One song that has to be playing",
+           "Something you have never told me",
+           "Anything you want to say back"];
   var saveT=null;
 
   function pLoad(){
@@ -2208,6 +2217,13 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       .catch(function(){ finish(false); });
   });
 
+  document.getElementById("pReset").addEventListener("click",function(){
+    for (var i=0;i<pf.length;i++) if (pf[i]) pf[i].value="";
+    try{ localStorage.removeItem(PKEY); }catch(e){}
+    pHint.textContent="Cleared. Blank slate.";
+    pSaved.classList.remove("on");
+    AUD.sfx("swap");
+  });
   document.getElementById("pCopy").addEventListener("click",function(){
     var body=pText();
     if (!body){ pHint.textContent="Nothing to copy yet."; return; }
