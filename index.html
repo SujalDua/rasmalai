@@ -27,6 +27,27 @@
     --fd:"Outfit",system-ui,sans-serif;
     --fb:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,sans-serif;
   }
+  /* she picks how she is feeling and the whole world changes colour */
+  html[data-mood="good"]{
+    --sky1:#1C3B52; --sky2:#3E7E86; --sky3:#F0B67F;
+    --coral:#FF8360; --butter:#FFE08A; --mint:#9BE3C9; --mint2:#3E9E85; --lilac:#A9D6E5;
+  }
+  html[data-mood="tired"]{
+    --sky1:#2A2440; --sky2:#5E5278; --sky3:#C9A8B8;
+    --coral:#E79A8C; --butter:#F3D9A4; --mint:#A8CFC4; --mint2:#5A9083; --lilac:#C2B3DE;
+  }
+  html[data-mood="awake"]{
+    --sky1:#0B1026; --sky2:#1E2A52; --sky3:#4A5B8C;
+    --coral:#7FA8E8; --butter:#C9D7F5; --mint:#7FC9C0; --mint2:#3E8B84; --lilac:#9FB0E8;
+  }
+  html[data-mood="low"]{
+    --sky1:#2B1F2E; --sky2:#6B4A52; --sky3:#E8B08A;
+    --coral:#FF9E7A; --butter:#FFD9A0; --mint:#B6D8B8; --mint2:#5D8F6A; --lilac:#D4B5C4;
+  }
+  html[data-mood="missing"]{
+    --sky1:#2E1B35; --sky2:#7A3F63; --sky3:#E4A0AE;
+    --coral:#FF7F94; --butter:#FFD0BC; --mint:#C6D8CE; --mint2:#6E9C8A; --lilac:#D9A8DC;
+  }
   *{box-sizing:border-box}
   html,body{height:100%}
   html{-webkit-text-size-adjust:100%}
@@ -224,6 +245,12 @@
     text-transform:uppercase;color:var(--ink3)}
 
   /* floating 3d label */
+  #quote{position:fixed;left:50%;top:84px;transform:translate(-50%,-14px);z-index:6;
+    pointer-events:none;opacity:0;transition:opacity .9s ease,transform .9s ease;
+    max-width:min(560px,calc(100% - 40px));text-align:center}
+  #quote.on{opacity:1;transform:translate(-50%,0)}
+  #quote p{margin:0;font-family:var(--fd);font-weight:500;font-size:clamp(1rem,2.6vw,1.22rem);
+    line-height:1.45;color:var(--snow);text-shadow:0 2px 18px rgba(12,8,28,.85)}
   #catsay{position:fixed;z-index:6;pointer-events:none;transform:translate(-50%,-100%);
     font-family:var(--fd);font-weight:600;font-size:13px;color:var(--ink);
     background:var(--snow);padding:7px 13px;border-radius:99px;white-space:nowrap;
@@ -244,6 +271,16 @@
   #intro .b{max-width:32ch}
   #intro .greet2{font-family:var(--fd);font-weight:500;font-size:13px;
     color:rgba(253,252,247,.62);margin:-8px 0 18px;min-height:14px}
+  #intro .askmood{font-family:var(--fd);font-weight:600;font-size:1.02rem;
+    color:rgba(253,252,247,.92);margin:4px 0 16px}
+  .moods{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 0 18px}
+  .moods button{font-family:var(--fd);font-weight:600;font-size:14px;color:var(--ink);
+    background:var(--snow);border:0;border-radius:14px;padding:14px 12px;text-align:left;
+    box-shadow:0 8px 22px rgba(20,16,44,.3);transition:transform .2s,box-shadow .2s;
+    display:flex;align-items:center;gap:9px}
+  .moods button:hover{transform:translateY(-2px);box-shadow:0 13px 28px rgba(20,16,44,.4)}
+  .moods button b{font-size:19px;font-weight:400;line-height:1}
+  .moods button:last-child:nth-child(odd){grid-column:1 / -1}
   #intro .greet{font-family:var(--fd);font-weight:600;font-size:12px;letter-spacing:.2em;
     text-transform:uppercase;color:var(--butter);margin:0 0 16px;min-height:16px}
   #intro h1{font-family:var(--fd);font-weight:300;font-size:clamp(2.6rem,9.5vw,4.4rem);
@@ -485,6 +522,7 @@
 
 <nav class="nav" id="nav" aria-label="Scenes"></nav>
 <div id="tag" aria-hidden="true"></div>
+<div id="quote" aria-hidden="true"><p id="quoteT"></p></div>
 <div id="catsay" aria-hidden="true"></div>
 <div id="sndmsg" aria-live="polite"></div>
 
@@ -495,8 +533,10 @@
     <h1>Five rooms,<br>one small <b>world</b>.</h1>
     <p>An island with six things on it, a machine that makes your decisions,
       a stack of receipts you did not ask for, a quiz you will probably lose, and a postbox so you can answer back.</p>
-    <button class="go" id="go" type="button">Have a look &nbsp;&#9834;</button>
-    <button class="quiet" id="goQuiet" type="button">or start without sound</button>
+    <p class="askmood">First, honestly &mdash; how are you today?</p>
+    <div class="moods" id="gate"></div>
+    <button class="quiet" id="goQuiet" type="button">or go in quietly, without sound</button>
+    <button class="go" id="go" type="button" hidden>Have a look</button>
   </div>
 </div>
 
@@ -1071,6 +1111,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
 
   var scene, cam, lamp, island, objs=[], snow=null, clouds=null, ray, ptr=new THREE.Vector2(-9,-9);
   var mouseX=innerWidth/2, mouseY=innerHeight/2;
+  var hemi=null, islandTop=null;
   var S1,S2,S3,S4,S5, flies=null, postbox=null, envelope=null, orb=null, stars=null, wheel=null, lever=null, printer=null, slips=[];
   var yaw=Math.random()*6.2832, vYaw=0, drag=false, moved=0, lastX=0, hov=-1;
   var CAMD=17.8, cur=0;
@@ -1314,7 +1355,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     scene=new THREE.Scene();
     cam=new THREE.PerspectiveCamera(42,1,.1,140);
     ray=new THREE.Raycaster();
-    scene.add(new THREE.HemisphereLight(0xBFA8E8,0x4A3F73,.95));
+    hemi=new THREE.HemisphereLight(0xBFA8E8,0x4A3F73,.95); scene.add(hemi);
     lamp=new THREE.DirectionalLight(0xFFE8C8,1.15);
     lamp.position.set(6,11,5); lamp.castShadow=true;
     lamp.shadow.mapSize.set(1024,1024);
@@ -1327,6 +1368,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     S1=new THREE.Group(); scene.add(S1);
     island=new THREE.Group();
     var top=cyl(5.7,5.35,.8,0xFFFFFF,48); top.position.y=-.4; top.receiveShadow=true;
+    islandTop=top;
     top.material=new THREE.MeshLambertMaterial({map:grassTex()}); island.add(top);
     var soil=cyl(5.35,3.7,1.7,0x6B5C8E,48); soil.position.y=-1.62; island.add(soil);
     var tip=cone(3.6,2.3,0x584A78,48); tip.position.y=-3.6; tip.rotation.x=Math.PI; island.add(tip);
@@ -1902,7 +1944,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   try{ catOn = localStorage.getItem("tofu.cats")!=="0"; }catch(e){}
 
   var CAT_KINDS=[
-    { id:"persian", light:"#F7EFE2", dark:"#D9C7B4", fleck:"120,100,80", point:"#E2C4C0",
+    { id:"persian", light:"#EFE2CE", dark:"#C9B49C", fleck:"120,100,80", point:"#E2C4C0",
       eye:"#7FA8C8", fluffy:true,  flat:true,  wedge:false,
       pointEars:false, pointPaws:false, pointTail:false, stripes:false,
       name:"the Persian",
@@ -1912,7 +1954,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       pointEars:false, pointPaws:false, pointTail:false, stripes:true,
       name:"Tofu",
       says:["Tofu says hello.","This one already has a name.","Tofu approves of the plan.","prrrrr."] },
-    { id:"siamese", light:"#F2E7D2", dark:"#DFCDB0", fleck:"120,100,80", point:"#4A382E",
+    { id:"siamese", light:"#E8DAC0", dark:"#C9B492", fleck:"120,100,80", point:"#4A382E",
       eye:"#4FB4E8", fluffy:false, flat:false, wedge:true,
       pointEars:true,  pointPaws:true,  pointTail:true,  stripes:false,
       name:"the Siamese",
@@ -1995,6 +2037,9 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     var fur=new THREE.MeshStandardMaterial({
       map:furTex(k), bumpMap:furTex(k), bumpScale:0.45,
       roughness:0.94, metalness:0, vertexColors:true });
+    var furPlain=new THREE.MeshStandardMaterial({
+      map:furTex(k), bumpMap:furTex(k), bumpScale:0.45,
+      roughness:0.94, metalness:0 });
     var point=new THREE.MeshStandardMaterial({
       color:new THREE.Color(k.point), roughness:0.95, metalness:0 });
 
@@ -2027,7 +2072,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
                    hp.getY(j)+hn.getY(j)*(k.fluffy?5:2.2),
                    hp.getZ(j)+hn.getZ(j)*(k.fluffy?5:2.2));
     var hull=new THREE.Mesh(hg,new THREE.MeshBasicMaterial({
-      color:new THREE.Color(k.light), transparent:true, opacity:.34,
+      color:new THREE.Color(k.light), transparent:true, opacity:k.fluffy?.22:.12,
       side:THREE.BackSide, depthWrite:false }));
     hull.position.y=34; hull.renderOrder=-1; spine.add(hull);
 
@@ -2051,7 +2096,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     [-1,1].forEach(function(side){
       var e=new THREE.Group();
       var eg=new THREE.ConeGeometry(7,13,7,1); eg.scale(1,1,0.5);
-      var outer=new THREE.Mesh(eg, k.pointEars?point:fur); e.add(outer);
+      var outer=new THREE.Mesh(eg, k.pointEars?point:furPlain); e.add(outer);
       var ig=new THREE.ConeGeometry(7,13,7,1); ig.scale(0.62,0.62,0.5);
       var inner=new THREE.Mesh(ig,new THREE.MeshBasicMaterial({color:0xE8A0A6}));
       inner.position.set(0.6,0,1.1); e.add(inner);
@@ -2091,12 +2136,12 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     var legs=[];
     [[18,7,0],[18,-7,0.25],[-16,7,0.5],[-16,-7,0.75]].forEach(function(L){
       var hip=new THREE.Group(); hip.position.set(L[0],30,L[1]); spine.add(hip);
-      var up=new THREE.Mesh(new THREE.CapsuleGeometry(4.6,9,3,8), k.pointPaws?point:fur);
+      var up=new THREE.Mesh(new THREE.CapsuleGeometry(4.6,9,3,8), k.pointPaws?point:furPlain);
       up.position.y=-5; hip.add(up);
       var knee=new THREE.Group(); knee.position.y=-10; hip.add(knee);
-      var lo=new THREE.Mesh(new THREE.CapsuleGeometry(3.3,9,3,8), k.pointPaws?point:fur);
+      var lo=new THREE.Mesh(new THREE.CapsuleGeometry(3.3,9,3,8), k.pointPaws?point:furPlain);
       lo.position.y=-5; knee.add(lo);
-      var paw=new THREE.Mesh(new THREE.SphereGeometry(3.7,8,6), k.pointPaws?point:fur);
+      var paw=new THREE.Mesh(new THREE.SphereGeometry(3.7,8,6), k.pointPaws?point:furPlain);
       paw.scale.set(1,0.7,1.3); paw.position.set(1,-10.5,0); knee.add(paw);
       legs.push({hip:hip,knee:knee,phase:L[2]});
     });
@@ -2108,9 +2153,10 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       seg.position.set(s2===0?-24:0, s2===0?34:0, 0);
       var r=r0*(1-s2*0.13), r2=r0*(1-(s2+1)*0.13);
       var tg=new THREE.CylinderGeometry(r2,r,8,7);
-      var tm=new THREE.Mesh(tg, (k.pointTail && s2>2)?point:fur);
+      var tm=new THREE.Mesh(tg, (k.pointTail && s2>2)?point:furPlain);
       tm.position.y=4; tm.rotation.x=0; seg.add(tm);
       if (s2>0) seg.position.y=8;
+      seg.rotation.z = (s2===0) ? 1.25 : -0.16;      // back from the hips, then curling up
       parent.add(seg); parent=seg; tail.push(seg);
     }
 
@@ -2158,7 +2204,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       cats[i].userData.baseY=floor;
       cats[i].position.y=floor;
       cats[i].position.x=Math.min(Math.max(cats[i].position.x,70), innerWidth-70);
-      cats[i].scale.setScalar(innerWidth<620 ? .62 : .86);
+      cats[i].scale.setScalar(innerWidth<620 ? .50 : .68);
     }
   }
 
@@ -2186,7 +2232,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
           moving=true;
         }
       }
-      c.rotation.y = u.face*0.52;
+      c.rotation.y = (1-u.face)*0.5*Math.PI;   // a real about-turn, not a 30-degree lean
 
       // lateral-sequence walk - the gait that actually reads as a cat
       var spd=Math.abs(u.vx);
@@ -2216,7 +2262,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       // the tail carries motion down its length
       for (var s=0;s<u.tail.length;s++){
         var w=0.35+s*0.16;
-        u.tail[s].rotation.z = (s===0?-0.30:0) + 0.10*Math.sin(t*3.4 - s*0.55)*w;
+        u.tail[s].rotation.z = (s===0?1.25:-0.16) + 0.10*Math.sin(t*3.4 - s*0.55)*w;
         u.tail[s].rotation.x = 0.07*Math.sin(t*2.3 - s*0.40)*w;
       }
 
@@ -2268,6 +2314,87 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     bubbleT=setTimeout(function(){ catBubble.classList.remove("on"); },2600);
   }
 
+  /* ══════ how she is feeling, and what the world does about it ══
+     Every line below is written for her, not lifted from anywhere. */
+  var MOODS_GATE = [
+    { id:"good",    icon:"☀️", label:"Genuinely good",  music:0,
+      fog:0x1C3B52, isle:0x9BE3C9, lamp:0xFFF0D0, hemi:0xBFE0E8,
+      line:"Good. Hold on to it — and go and look at the mountain first.",
+      quotes:["Good days suit you. So does taking credit for them.",
+              "Whatever you did today, do that again tomorrow.",
+              "This is the version of you that books the flight."] },
+    { id:"tired",   icon:"☕", label:"A bit tired",      music:1,
+      fog:0x2A2440, isle:0xA8CFC4, lamp:0xFFE8C8, hemi:0xC2B3DE,
+      line:"Then go slowly. Nothing in here is in a hurry either.",
+      quotes:["Tired is allowed. You have been carrying quite a lot.",
+              "Rest is not a reward for finishing. Take it now.",
+              "You do not have to close the rings on a day like this."] },
+    { id:"awake",   icon:"🌙", label:"Wide awake at 1am", music:2,
+      fog:0x0B1026, isle:0x7FC9C0, lamp:0xBCD4FF, hemi:0x9FB0E8,
+      line:"Of course you are. Stay a while, then actually sleep.",
+      quotes:["Yes, it is late. No, I am not surprised.",
+              "The reels will still be there tomorrow. Probably.",
+              "Somebody, somewhere, is telling you to drink water."] },
+    { id:"low",     icon:"☁️", label:"Not great, honestly", music:0,
+      fog:0x2B1F2E, isle:0xB6D8B8, lamp:0xFFD9A0, hemi:0xD4B5C4,
+      line:"Then this was built for exactly today. Take your time.",
+      quotes:["A bad day is weather, not a verdict.",
+              "You are allowed to be proud of yourself on the days it is hard.",
+              "Nothing about today changes anything that is true about you."] },
+    { id:"missing", icon:"🎀", label:"Missing you", music:0,
+      fog:0x2E1B35, isle:0xC6D8CE, lamp:0xFFD0BC, hemi:0xD9A8DC,
+      line:"Eighteen hundred kilometres, and November is closer than it was.",
+      quotes:["The distance is the only inconvenient part. Everything else is fine.",
+              "Counted in sleeps, November is not far at all.",
+              "Somebody is thinking about the same thing at the same time."] }
+  ];
+  var moodNow = null;
+  try{ moodNow = localStorage.getItem("tofu.feel"); }catch(e){}
+
+  function moodById(id){
+    for (var i=0;i<MOODS_GATE.length;i++) if (MOODS_GATE[i].id===id) return MOODS_GATE[i];
+    return null;
+  }
+  function applyMood(id, withSound){
+    var m=moodById(id); if (!m) return;
+    moodNow=id;
+    try{ localStorage.setItem("tofu.feel", id); }catch(e){}
+    document.documentElement.setAttribute("data-mood", id);
+    refillBag();
+    // repaint the 3D world to match
+    if (scene && scene.fog) scene.fog.color.setHex(m.fog);
+    if (lamp) lamp.color.setHex(m.lamp);
+    if (hemi) hemi.color.setHex(m.hemi);
+    if (islandTop && islandTop.material) islandTop.material.color.setHex(m.isle);
+    if (withSound!==false) AUD.setMood(m.music);
+  }
+  function moodQuote(){
+    // one-shot on mood change; the rotating bag handles the rest
+    var m=moodById(moodNow) || MOODS_GATE[0];
+    var q=m.quotes[Math.floor(Math.random()*m.quotes.length)];
+    var el=document.getElementById("quote"), t=document.getElementById("quoteT");
+    if (!el||!t) return;
+    t.textContent=q; el.classList.add("on");
+    setTimeout(function(){ el.classList.remove("on"); }, 7000);
+  }
+
+  (function buildGate(){
+    var gate=document.getElementById("gate");
+    if (!gate) return;
+    MOODS_GATE.forEach(function(m){
+      var b=document.createElement("button");
+      b.type="button";
+      b.innerHTML='<b>'+m.icon+'</b><span>'+m.label+'</span>';
+      b.addEventListener("click",function(){
+        applyMood(m.id, true);
+        AUD.start(); AUD.sfx("land");
+        var g2=document.getElementById("greet2");
+        if (g2) g2.textContent=m.line;
+        setTimeout(function(){ afterIntro(); setTimeout(moodQuote, 1400); }, 850);
+      });
+      gate.appendChild(b);
+    });
+  })();
   /* ══════ the third of February ═════════════════════════
      She gave the date on 17 August 2026 at 9:33 pm: "3rd feb, 2003". */
   var BD_MONTH=1, BD_DAY=3;            // February is month 1
@@ -2323,6 +2450,71 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   document.getElementById("cake").addEventListener("click",showBday);
   document.getElementById("bdOk").addEventListener("click",hideBday);
   bdayEl.addEventListener("click",function(e){ if(e.target===bdayEl) hideBday(); });
+
+  /* ══════ a line that drifts past ═══════════════════════
+     Her mood's own lines first, then a wider pool. Fades in and out,
+     and holds its tongue whenever something is open to read. */
+  var SOFT_LINES = [
+    "You doubled the last letter again. That is how I know.",
+    "Somebody kept the list of mountains. It was never going to be you.",
+    "Drink some water. Yes, now.",
+    "The cat still has a name and still does not exist.",
+    "Twelve valleys, and not one of them crossed off. Yet.",
+    "You are allowed to take the whole day off being impressive.",
+    "Whatever the mirror said this morning, it is outvoted.",
+    "Nobody types GOOD MORNINGGG at five in the morning by accident.",
+    "There is a version of this where you simply wear the saree.",
+    "The rings will wait. So will I.",
+    "Three Gs. Every time. I have counted.",
+    "Your feed worked it out before either of us did.",
+    "Being tired is not the same as falling behind.",
+    "Eat the cake. This is not a negotiation.",
+    "You are the only person who has told me to drink water and meant it as an argument.",
+    "November is closer than it was this morning.",
+    "Friends, family, animals, walking, eating, sleeping. Still the best list ever written.",
+    "Somebody is proud of you today, and it is not only you."
+  ];
+  var qBox=document.getElementById("quote"), qEl=document.getElementById("quoteT"),
+      qBag=[], qTimer=null;
+  function busy(){
+    return card.classList.contains("on") || reader_open() ||
+           document.getElementById("intro").classList.contains("gone")===false;
+  }
+  function reader_open(){
+    var ids=["howto","note","bday","fin"];
+    for (var i=0;i<ids.length;i++){
+      var e=document.getElementById(ids[i]);
+      if (e && e.classList.contains("on")) return true;
+    }
+    return false;
+  }
+  function refillBag(){
+    var m=moodById(moodNow);
+    var pool=SOFT_LINES.concat(m && m.quotes ? m.quotes : []);
+    qBag=pool.slice();
+    for (var i=qBag.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1)), t=qBag[i]; qBag[i]=qBag[j]; qBag[j]=t;
+    }
+  }
+  function showQuote(){
+    if (!qEl || !qBox) return;
+    if (busy()){ qBox.classList.remove("on"); return; }
+    if (!qBag.length) refillBag();
+    qEl.textContent = qBag.shift();
+    qBox.classList.add("on");
+    setTimeout(function(){ qBox.classList.remove("on"); }, 8200);
+  }
+  function startQuotes(){
+    if (qTimer) return;
+    refillBag();
+    setTimeout(showQuote, 2600);
+    qTimer=setInterval(showQuote, 13000);
+    // a quote already on screen must get out of the way the moment she opens
+    // something - the card is a side panel, so it would otherwise sit over it
+    setInterval(function(){
+      if (qBox && qBox.classList.contains("on") && busy()) qBox.classList.remove("on");
+    }, 350);
+  }
 
   /* ══════ the quiz ══════════════════════════════════════ */
   var qProg=document.getElementById("qProg"), qQ=document.getElementById("qQ"),
@@ -2657,6 +2849,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     AUD.setOn(false);
     paintSnd();
     afterIntro();
+    applyMood(moodNow || "tired", false);
   });
   document.getElementById("go").addEventListener("click",function(){
     afterIntro();
@@ -2854,7 +3047,8 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       document.body.appendChild(fb);
       return;
     }
-    clock=new THREE.Clock(); build(); initCats(); tick();
+    clock=new THREE.Clock(); build();
+    if (moodNow) applyMood(moodNow, false); initCats(); startQuotes(); tick();
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(boot,boot);
   else boot();
